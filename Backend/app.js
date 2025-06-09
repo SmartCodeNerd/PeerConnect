@@ -7,7 +7,7 @@ import dotenv from "dotenv";
 dotenv.config();
 import connectDB from "./src/config/db.js";
 import connectToServer from "./src/controllers/socketManager.js";
-import userRoutes from "./src/routes/userRoutes.js";
+import authRoutes from "./src/routes/authRoutes.js";
 
 const port = process.env.PORT || 3000;
 //To Create an instance of express
@@ -23,7 +23,7 @@ app.use(cors()); // Cross Origin Resource Sharing
 app.use(express.json({limit:"50kb"}));
 app.use(express.urlencoded({limit:"50kb",extended:true}));
 
-app.use("/auth",userRoutes);
+app.use("/auth",authRoutes);
 
 app.get("/home",(req,res) => {
     console.log("Done");

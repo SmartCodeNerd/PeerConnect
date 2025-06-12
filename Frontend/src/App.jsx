@@ -6,6 +6,11 @@ function App() {
   return (
     <>
       <Landing />
+      <Router>
+        <Routes>
+           <Route path="/" element={<Landing/>} />
+        </Routes>
+      </Router>
     </>
   )
 }

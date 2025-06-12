@@ -1,6 +1,22 @@
-/* GLobal styles for the application-Removes all the default styles that browser provides */
+/* Global reset */
 * {
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Center everything in the body */
+body {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.landingPageContainer {
+  width:100vw;
+  height:100vh;
+  background:url("../public/background.png");
+  background-repeat:no-repeat;
+  background-size: cover;
 }

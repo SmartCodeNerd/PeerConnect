@@ -1,5 +1,8 @@
 import react from "react"
 import '../styles/videoComponent.css'
+import {useRef,useState,isChrome} from "react";
+import { TextField,Button } from "@mui/material";
+
 
 const serverUrl = "http://localhost:3000";
 
@@ -32,17 +35,19 @@ export default function VideoMeetComponent() {
     const videoRef = useRef();
 
     //Checking that the current browser is Chromium based or not...for WebRTC's working
-    if(isChrome() === false) {}
+    if(isChrome === false) {}
     
     return (
-        // {askForUsername === true ? 
-        //     <div>
-
-
-        //     </div> 
-        //     : 
-        //     <></>
-        // }
-        <div>Hello</div>
+        <div>
+            {askForUsername === true ? 
+            <div>
+                <h2>Enter Into Lobby</h2><br></br>
+                <TextField id="outlined-basic" label="Username" value={username} onChange={e => setUsername(e.target.value)} variant="outlined" />
+                <Button variant="contained">Connect</Button>
+            </div> 
+            : 
+            <></>
+        }
+        </div>
     )
 }

@@ -1,5 +1,5 @@
 import './App.css';
-import { Route, BrowserRouter as Router, Routes .Link,} from 'react-router-dom';
+import { Route, BrowserRouter as Router, Routes ,Link,} from 'react-router-dom';
 import LandingPage from './pages/landing';
 import Authentication from './pages/authentication';
 import { AuthProvider } from './contexts/AuthContext';

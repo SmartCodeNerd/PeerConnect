@@ -5,6 +5,7 @@ let messages = {};
 let timeOnline = {};    
 
     const connectToServer = (server) => {
+        console.log("Something Connected");
     const io = new Server(server, {
         //Resolving CORS issues
         cors:  {

@@ -1,8 +1,9 @@
 .body {
     display:flex;
     justify-content: center;
-    align-content: center;
+    align-items: center;
 }
+
 .videoDiv {
     height:200px;
     width:200px;

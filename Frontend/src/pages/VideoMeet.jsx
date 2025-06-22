@@ -3,7 +3,6 @@ import '../styles/videoComponent.css'
 import {useRef,useState,isChrome,useEffect} from "react";
 import { TextField,Button } from "@mui/material";
 
-
 const serverUrl = "http://localhost:3000";
 
 let connections = {};
@@ -43,7 +42,7 @@ export default function VideoMeetComponent() {
             const videoPermission = await navigator.mediaDevices.getUserMedia({video:true});
             if(videoPermission) {
                 setVideoAvailable(true);
-            }
+            } 
             else {
                 setVideoAvailable(false);
             }
@@ -78,8 +77,56 @@ export default function VideoMeetComponent() {
         }
     }
 
-    let getUserMediaSuccess = async () => {
+    let getUserMediaSuccess = async (stream) => {
+        try{
+            window.localStream.getTracks().forEach(track => track.stop());
+        }
+        catch(e) {
+            console.log("Error-",e);
+        }
+        window.localStream = stream;
+        localVideoRef.current.srcObject = stream;
 
+        for(id in connections) {
+            if(id === socketIdRef.current) continue;
+            connections[id].addStream(window.localStream);
+            connections[id].createOffer().then((description) => {
+                    connections[id].setLocalDescription(description)
+                    .then(() => {
+                        socketIdRef.current.emit("signal",id,JSON.stringify({"sdp":connections[id].localDescription}));
+                    })
+                    .catch(e => console.log("Error-",e));
+                });
+            }
+        stream.getTracks.forEach(track => track.onended = () => {
+            setVideo(false);
+            setAudio(false);
+
+            try {
+                let tracks = localVideoRef.current.srcObject.getTracks();
+                tracks.forEach(track => track.stop());
+            }
+            catch(e){
+                console.log("Error-",e)
+            }
+            //Todo Blacksilence
+
+            for(id in connections) {
+                connections[id].addStream(window.localStream);
+                connections[id].createOffer().then((description) => {
+                    connections[id].setLocalDescription(description)
+                    .then(()=>{
+                        socketRef.current.emit("signal",id,JSON.stringify({"sdp":connections[id].localDescription}))
+                    })
+                    .catch(e => console.log("Error-",e));
+                })
+            }
+        })
+    }
+    //For Audio there is Audio Context...and for video there is Canvas
+    let silence = () => {
+        let ctx = new AudioContext();
+        let oscillator = ctx.createOscillator();//It basically generates a constant tone
     }
 
     let getUserMedia = async () => {

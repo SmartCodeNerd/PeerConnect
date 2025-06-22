@@ -169,9 +169,38 @@ export default function VideoMeetComponent() {
                             })
                         }
                     };
-
                     
+                    if(window.localStream != undefined && window.localStream != null) {
+                        connections[socketListId].addStream(window.localStream);
+                    }
+                    else {
+                        //When Video is turned off...a black screen is displayed
+                        //let blackSilence = 
+                    }                    
                 })
+
+                if(id === socketIdRef.current) {
+                    for(let id2 in connections) {
+                        //socketIdRef.current -> means self...
+                        if(id2 === socketIdRef.current) continue;
+                        try {
+                            connections[id2].addStream(window.localStream);
+                        }
+                        catch(e) {
+
+                        }
+                        connections[id2].createOffer().then((description)=>{
+                            connections[id2].setLocalDescription(description)
+                            .then(()=>{
+                                //Main code for handshaking process...sdp->session description  
+                                socketRef.current.emit("signal",id2,JSON.stringify({"sdp":connections[id2].localDescription}));
+                            })
+                            .catcg(e) {
+                                console.log("Error",e); 
+                            }
+                        })
+                    }
+                }
             })
         })
     }

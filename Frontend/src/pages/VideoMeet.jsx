@@ -195,9 +195,9 @@ export default function VideoMeetComponent() {
                                 //Main code for handshaking process...sdp->session description  
                                 socketRef.current.emit("signal",id2,JSON.stringify({"sdp":connections[id2].localDescription}));
                             })
-                            .catcg(e) {
+                            .catch((e) => {
                                 console.log("Error",e); 
-                            }
+                            })
                         })
                     }
                 }

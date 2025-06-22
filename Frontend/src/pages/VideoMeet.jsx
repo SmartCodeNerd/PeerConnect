@@ -110,14 +110,36 @@ export default function VideoMeetComponent() {
     },[video,audio]);
 
     let gotMessageFromServer = (fromId,message) => {
+        let signal = JSON.parse(message);
 
+        if(fromId != socketIdRef.current) {
+            if(signal.sdp) {
+                connections[fromId].setRemoteDescription(new RTCSessionDescription(signal.sdp)).then(() => {
+                        if(signal.sdp.type === "offer") {
+                            connections[fromId].createAnswer().then((description) => {
+                                connections[fromId].setLocalDescription(description).then(() => {
+                                    socketIdRef.current.emit("signal",fromId,JSON.stringify({"sdp":connections[fromId].localDescription}));
+                                })
+                                // .catch(e) {
+                                //     console.log("Error-",e);
+                                // }
+                            })
+                            // .catch(e) {
+                            //     console.log("Error-",e);
+                            // }
+                        }
+                })
+                .catch(e => console.log("Error-",e));
+            }
+            if(signal.ice) {
+                connections[fromId]
+                .addIceCandidate(new RTCIceCandidate(signal.ice))
+                .catch(e=>console.log("Error",e))
+            }
+        }   
     }
 
-    //gotMessageFromServer
     //addMessages
-    // let gotMessageFromServer = () => {
-
-    // }
 
     let addMessage = () => {
 

@@ -267,7 +267,21 @@ export default function VideoMeetComponent() {
       console.log("Screen Share Error",e);
     }
 
+  };
+
+  const endCall = () => {
+    //Close All Peer Connections
+    for(id in connections) {
+       if(connections[id]) {
+        connections[id].close();
+        delete connections[id];
+       }
+    }
+    
+    
   }
+
+
   
 
   function VideoPlayer({ stream }) {

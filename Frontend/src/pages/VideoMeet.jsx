@@ -15,8 +15,10 @@ import ScreenShareIcon from '@mui/icons-material/ScreenShare';
 import StopScreenShareIcon from '@mui/icons-material/StopScreenShare';
 import ChatIcon from '@mui/icons-material/Chat';
 import styles from '../styles/videoComponent.module.css';
+import { useNavigate } from 'react-router-dom';
 
 const serverUrl = 'http://localhost:3000';
+
 
 let connections = {};
 const signalBuffer = {};
@@ -25,6 +27,7 @@ const peerConfig = {
 };
 
 export default function VideoMeetComponent() {
+  const navigate = useNavigate();
   const socketRef = useRef();
   const socketIdRef = useRef();
   const localVideoRef = useRef();
@@ -271,15 +274,33 @@ export default function VideoMeetComponent() {
 
   const endCall = () => {
     //Close All Peer Connections
-    for(id in connections) {
+    for(let id in connections) {
        if(connections[id]) {
         connections[id].close();
         delete connections[id];
        }
     }
     
-    
-  }
+    //Stops All Local Media Tracks
+    if(window.localStream) {
+      window.localStream.getTracks().forEach(track => track.stop());
+      window.localStream = null;
+    }
+
+    //Reset UI State
+    setVideos([]);
+    setAskForUsername(true);
+    getPermissions();
+    setShowModal(false);
+    setChatMessages([]);
+    setNewMessage(0);
+    //Optionaly disconnect the socket
+    if(socketRef.current) {
+      socketRef.current.disconnect();
+      socketRef.current = null;
+    }
+    navigate('/afterCall');
+  };
 
 
   
@@ -295,15 +316,17 @@ export default function VideoMeetComponent() {
 
   //For Recieving Chat Messages
   useEffect(() => {
-    if(!socketRef.current) return;
-    socketRef.current.on('chat-message',( data, sender, senderId ) => {
-      setChatMessages(prev => [...prev,{ data, sender, senderId }]);
-      setNewMessage(prev => prev + 1);
-    });
-    return () => {
+  if (!socketRef.current) return;
+  socketRef.current.on('chat-message', (data, sender, senderId) => {
+    setChatMessages(prev => [...prev, { data, sender, senderId }]);
+    setNewMessage(prev => prev + 1);
+  });
+  return () => {
+    if (socketRef.current) {
       socketRef.current.off('chat-message');
-    };
-  },[socketRef.current]);
+    }
+  };
+}, [socketRef.current]);
 
   return <video ref={ref} autoPlay playsInline className={styles.remoteVideo} />;
 }
@@ -368,7 +391,7 @@ export default function VideoMeetComponent() {
                 <ChatIcon />
               </IconButton>
             </Badge>
-            <IconButton style={{ color: 'red' }}><CallEndIcon /></IconButton>
+            <IconButton onClick={endCall} style={{ color: 'red' }}><CallEndIcon /></IconButton>
           </div>
 
           <div className={styles.localVideoBox}>

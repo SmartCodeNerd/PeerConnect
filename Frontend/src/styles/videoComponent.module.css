@@ -79,3 +79,11 @@
   border: 2px solid #666;
   background-color: black;
 }
+
+
+.chatModal {
+  margin-bottom: 10vh;
+  margin-left: 80vw;
+  background-color: antiquewhite;
+}
+

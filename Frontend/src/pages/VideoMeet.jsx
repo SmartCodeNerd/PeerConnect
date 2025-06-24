@@ -228,6 +228,48 @@ export default function VideoMeetComponent() {
     }
   };
 
+  const startScreenShare = async () => {
+    try {
+      const screenStream = await navigator.mediaDevices.getDisplayMedia({ video:true });
+      setScreen(true);
+
+      for(let id in connections) {
+        const sender = connections[id]
+          .getSenders()
+          .find(s => s.track && s.track.kind === 'video');
+        if(sender) {
+          sender.replaceTrack(screenStream.getVideoTracks()[0]);
+        }
+      }
+      //Show Screen in Local Video
+      if(localVideoRef.current) {
+        localVideoRef.current.srcObject = screenStream;
+      }
+
+       screenStream.getVideoTracks()[0].onended = async () => {
+      setScreen(false);
+      await getUserMedia();
+      // Replace back to camera in all peer connections
+      for (let id in connections) {
+        const sender = connections[id]
+          .getSenders()
+          .find(s => s.track && s.track.kind === 'video');
+        if (sender && window.localStream) {
+          sender.replaceTrack(window.localStream.getVideoTracks()[0]);
+        }
+      }
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = window.localStream;
+      }
+    };
+
+    } catch(e) {
+      console.log("Screen Share Error",e);
+    }
+
+  }
+  
+
   function VideoPlayer({ stream }) {
   const ref = useRef();
 
@@ -300,11 +342,13 @@ export default function VideoMeetComponent() {
             <IconButton onClick={toggleVideo} style={{ color: 'white' }}>
             {video ? <VideocamIcon /> : <VideocamOffIcon />}
             </IconButton>
-            {screenAvailable && (
-              <IconButton style={{ color: 'white' }}>
-                {screen ? <ScreenShareIcon /> : <StopScreenShareIcon />}
-              </IconButton>
-            )}
+            <IconButton
+              onClick={screen ? undefined : startScreenShare}
+              style={{ color: 'white' }}
+              disabled={screen}
+            >
+              {screen ? <StopScreenShareIcon /> : <ScreenShareIcon />}
+            </IconButton>
             <Badge badgeContent={newMessage} color="error">
               <IconButton onClick={() => setShowModal(!showModal)} style={{ color: 'white' }}>
                 <ChatIcon />

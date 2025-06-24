@@ -237,8 +237,17 @@ export default function VideoMeetComponent() {
     }
   }, [stream]);
 
-  //For Chat Messages
-  useEffect()
+  //For Recieving Chat Messages
+  useEffect(() => {
+    if(!socketRef.current) return;
+    socketRef.current.on('chat-message',( data, sender, senderId ) => {
+      setChatMessages(prev => [...prev,{ data, sender, senderId }]);
+      setNewMessage(prev => prev + 1);
+    });
+    return () => {
+      socketRef.current.off('chat-message');
+    };
+  },[socketRef.current]);
 
   return <video ref={ref} autoPlay playsInline className={styles.remoteVideo} />;
 }
@@ -317,6 +326,35 @@ export default function VideoMeetComponent() {
               </div>
             ))}
           </div>
+
+          {/* Chat modal */}
+          {showModal && (
+            <div className={styles.chatModal}>
+              <div className={styles.chatHeader}>
+                <h3>Chat</h3>
+                <Button onClick={() => setShowModal(false)}>Close</Button>
+              </div>
+              <div className={styles.chatBody}>
+                {chatMessages.map((msg, idx) => (
+                  <div key={idx} className={styles.chatMessage}>
+                    <b>{msg.sender}:</b> {msg.data}
+                  </div>
+                ))}
+              </div>
+              <div className={styles.chatInput}>
+                <TextField
+                  value={chatInput}
+                  onChange={e => setChatInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Enter') sendChatMessage(); }}
+                  placeholder="Type a message..."
+                  fullWidth
+                />
+                <Button onClick={sendChatMessage} variant="contained">Send</Button>
+              </div>
+            </div>
+          )}
+
+
         </div>
       )}
     </div>

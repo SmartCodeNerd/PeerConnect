@@ -55,7 +55,7 @@ let timeOnline = {};
 
         //socket.to method in Socket.IO is used to send a message to all sockets in a specific room, except the sender.
         socket.on("signal",(toId,message) => {
-            console.log(`📶 Signal from ${socket.id} to ${toId}:`, message);
+            //console.log(`📶 Signal from ${socket.id} to ${toId}:`, message);
             io.to(toId).emit("signal",socket.id,message);
         });
 
@@ -91,7 +91,7 @@ let timeOnline = {};
                     connections[path] = connections[path].filter(id => id !== socket.id);
                     // Notify other users in the room about the disconnection
                     connections[path].forEach(element => {
-                        io.to(element).emit("user-disconnected", socket.id);
+                        io.to(element).emit("user-left", socket.id);
                     });
                     // If the room is empty, delete it
                     if(connections[path].length === 0) {

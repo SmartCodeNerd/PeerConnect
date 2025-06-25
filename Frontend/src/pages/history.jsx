@@ -10,7 +10,9 @@ const History = () => {
         const fetchHistory = async () => {
             try {
                 const res = await getHistoryOfUser();
-                setMeetings(res.data.meetings || []);
+                console.log("Res",res);
+                setMeetings(res.meetings || []);
+                console.log("Meetings",meetings);
             } catch (err) {
                 setMeetings([]);
             }
@@ -31,8 +33,8 @@ const History = () => {
                     {meetings.map((meeting, idx) => (
                         <li key={idx}>
                             <b>Meeting Code:</b> {meeting.meetingCode}
-                            {meeting.createdAt && (
-                                <span> &nbsp; | &nbsp; <b>Date:</b> {new Date(meeting.createdAt).toLocaleString()}</span>
+                            {meeting.date && (
+                                <span> &nbsp; | &nbsp; <b>Date:</b> {new Date(meeting.date).toLocaleString()}</span>
                             )}
                         </li>
                     ))}

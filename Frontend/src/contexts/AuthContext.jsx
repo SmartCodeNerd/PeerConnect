@@ -52,7 +52,7 @@ export const AuthProvider = ({ children }) => {
           token: localStorage.getItem('token'),
         },
       });
-      console.log("Context",request);
+      //console.log("Context",request);
       return request.data;
     } catch (err) {
       throw err;

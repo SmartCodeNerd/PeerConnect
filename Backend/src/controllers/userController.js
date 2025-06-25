@@ -72,18 +72,22 @@ const logout = async (req,res) => {
 }
 
 
-const getHistory = async (req,res) => { 
-    const {token} = req.query;
+const getHistory = async (req, res) => { 
+    const { token } = req.query;
 
     try {
-        const user = await User.findOne({token:token});
-        const meetings = await Meeting.find({ userId: user._id })
-        .select('meetingCode');
-        res.json(meetings);
+        const user = await User.findOne({ token: token });
+        if (!user) {
+            return res.status(401).json({ message: "Invalid token" });
+        }
+        //console.log("User",user);
+        const meetings = await Meeting.find({ userId: user._id });
+        //console.log("Meeting", meetings);
+        res.json({ meetings });
     }
-    catch(e) {
-        console.log("Get History Error",e);
-        res.json({message:`Something Went Wrong-${e}`});
+    catch (e) {
+        console.log("Get History Error", e);
+        res.json({ message: `Something Went Wrong-${e}` });
     }
 }
 

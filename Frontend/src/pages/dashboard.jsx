@@ -10,6 +10,9 @@ function Dashboard() {
 
     let navigate = useNavigate();
     const [meetingCode, setMeetingCode] = useState("");
+    const [anchorEl, setAnchorEl] = useState(null);
+    const [showModal, setShowModal] = useState(false);
+    const [createdCode, setCreatedCode] = useState('');
 
     const {addToUserHistory} = useContext(AuthContext);
     let handleJoinVideoCall = async () => {
@@ -34,7 +37,7 @@ function Dashboard() {
         return `${part1}-${part2}-${part3}`;
     }
 
-    const [anchorEl, setAnchorEl] = useState(null);
+    
 
     // Open menu
     const handleClick = (event) => {
@@ -47,14 +50,23 @@ function Dashboard() {
     };
 
     //Create a meet for later
-    const handleCreate = () => {
-        console.log(generateRandomCode());
+    const handleCreate = async () => {
+        const meetCode = generateRandomCode();
+        setCreatedCode(meetCode);
+        setShowModal(true);
+        handleClose();
     }
 
+    //Copy Handler
+    const handleCopy = () => {
+        navigator.clipboard.writeText(createdCode);
+    };
+
     //Start an instant meet
-    const handleStart = async () => {
+    const handleStart = async () => {   
         const meetCode = generateRandomCode();
-        await addToUserHistory(meetingCode)
+        console.log(meetCode);
+        await addToUserHistory(meetCode);
         navigate(`/${meetCode}`);
     }
 
@@ -121,6 +133,24 @@ function Dashboard() {
                     <img srcSet='/logo3.png' alt="" />
                 </div>
             </div>
+
+            {showModal && (
+            <div style={{
+                position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+                background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+            }}>
+                <div style={{
+                background: '#fff', padding: 32, borderRadius: 8, minWidth: 320, textAlign: 'center'
+                }}>
+                <h2>Here is your Meeting Info</h2>
+                <div style={{ fontSize: 24, margin: '16px 0', wordBreak: 'break-all' }}>
+                    {createdCode}
+                    <Button onClick={handleCopy} style={{ marginLeft: 8 }}>Copy</Button>
+                </div>
+                <Button onClick={() => setShowModal(false)}>Close</Button>
+                </div>
+            </div>
+            )}
         </>
     )
 }

@@ -46,11 +46,13 @@ export const AuthProvider = ({ children }) => {
 
   const getHistoryOfUser = async () => {
     try {
+      console.log("Into Context");
       let request = await client.get('/get-all-activity', {
         params: {
           token: localStorage.getItem('token'),
         },
       });
+      console.log("Context",request);
       return request.data;
     } catch (err) {
       throw err;

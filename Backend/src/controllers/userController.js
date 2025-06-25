@@ -77,7 +77,8 @@ const getHistory = async (req,res) => {
 
     try {
         const user = await User.findOne({token:token});
-        const meetings = await Meeting.findOne({userId:user._id});
+        const meetings = await Meeting.find({ userId: user._id })
+        .select('meetingCode');
         res.json(meetings);
     }
     catch(e) {
@@ -87,9 +88,9 @@ const getHistory = async (req,res) => {
 }
 
 const addToUserHistory = async (req, res) => {
-    console.log("Req Body",req.body);
+    //console.log("Req Body",req.body);
     const { token, meetingCode } = req.body;
-    console.log("Req Body",req.body);
+    //console.log("Req Body",req.body);
     try {
         const user = await User.findOne({ token: token });
         if (!user) {
@@ -101,7 +102,9 @@ const addToUserHistory = async (req, res) => {
             userId: user._id, // Use userId (capital I) for consistency
         };
 
+        console.log("Before Creation");
         await Meeting.create(newMeetingDetails);
+        console.log("After Creation");
 
         res.status(httpStatus.CREATED).json({ message: "Added to History Details" });
     } catch (e) {

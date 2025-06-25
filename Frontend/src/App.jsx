@@ -6,7 +6,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import VideoMeetComponent from './pages/VideoMeet';
 import Dashboard from './pages/dashboard.jsx';
 import Feedback from './pages/feedback.jsx';
-
+import History from './pages/history.jsx';
 
 function App() {
   return (
@@ -21,6 +21,7 @@ function App() {
             <Route path='/:url' element={<VideoMeetComponent/>} />
             <Route path='/dashboard' element={<Dashboard/>} />
             <Route path='/afterCall' element={<Feedback/>} />
+            <Route path='/history' element={<History/>} />
           </Routes>
         </AuthProvider>
 

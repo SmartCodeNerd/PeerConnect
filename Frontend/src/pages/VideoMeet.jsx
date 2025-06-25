@@ -47,6 +47,10 @@ export default function VideoMeetComponent() {
   const [videos, setVideos] = useState([]);
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState('');
+  const [audioDevices, setAudioDevices] = useState([]);
+  const [videoDevices, setVideoDevices] = useState([]);
+  const [selectedAudio, setSelectedAudio] = useState('');
+  const [selectedVideo, setSelectedVideo] = useState('');
 
   const getPermissions = async () => {
     try {
@@ -58,6 +62,15 @@ export default function VideoMeetComponent() {
       setVideoAvailable(true);
       setAudioAvailable(true);
       setScreenAvailable(!!navigator.mediaDevices.getDisplayMedia);
+
+          // List devices
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const audioInputs = devices.filter(d => d.kind === 'audioinput');
+    const videoInputs = devices.filter(d => d.kind === 'videoinput');
+    setAudioDevices(audioInputs);
+    setVideoDevices(videoInputs);
+    if (audioInputs.length) setSelectedAudio(audioInputs[0].deviceId);
+    if (videoInputs.length) setSelectedVideo(videoInputs[0].deviceId);
     } catch (error) {
       console.error('Media permission error:', error);
     }
@@ -223,6 +236,26 @@ export default function VideoMeetComponent() {
     await getUserMedia();
     connectToSocketServer();
   };
+
+  const handleAudioChange = async (e) => {
+  setSelectedAudio(e.target.value);
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { deviceId: selectedVideo ? { exact: selectedVideo } : undefined },
+    audio: { deviceId: { exact: e.target.value } }
+  });
+  window.localStream = stream;
+  if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+  };
+
+  const handleVideoChange = async (e) => {
+  setSelectedVideo(e.target.value);
+  const stream = await navigator.mediaDevices.getUserMedia({
+    video: { deviceId: { exact: e.target.value } },
+    audio: { deviceId: selectedAudio ? { exact: selectedAudio } : undefined }
+  });
+  window.localStream = stream;
+  if (localVideoRef.current) localVideoRef.current.srcObject = stream;
+  };
   
   const sendChatMessage = () => {
     if(chatInput.trim() && socketRef.current) {
@@ -332,16 +365,21 @@ export default function VideoMeetComponent() {
 }
 
   const toggleVideo = () => {
-      setVideo(prev => {
-          const newState = !prev;
-          if (window.localStream) {
-          window.localStream.getVideoTracks().forEach(track => {
-              track.enabled = newState;
-          });
-          }
-          return newState;
+    setVideo(prev => {
+        const newState = !prev;
+        if (window.localStream) {
+            window.localStream.getVideoTracks().forEach(track => {
+                track.enabled = newState;
+            });
+            // Force refresh local video element
+            if (localVideoRef.current) {
+                localVideoRef.current.srcObject = null;
+                localVideoRef.current.srcObject = window.localStream;
+            }
+        }
+        return newState;
       });
-  };
+    };
 
   const toggleAudio = () => {
       setAudio(prev => {
@@ -362,15 +400,41 @@ export default function VideoMeetComponent() {
   return (
     <div>
       {askForUsername ? (
-        <div className="videoParent">
-          <h2>Enter Into Lobby</h2>
-          <TextField label="Username" value={username} onChange={e => setUsername(e.target.value)} />
-          <Button variant="contained" onClick={getMedia}>Connect</Button>
-          <div className="videoDiv">
-            <video ref={localVideoRef} autoPlay muted />
-          </div>
+  <div className="videoParent">
+    <h2>Enter Into Lobby</h2>
+    <TextField label="Username" value={username} onChange={e => setUsername(e.target.value)} />
+    <div className="videoDiv">
+      <video ref={localVideoRef} autoPlay muted playsInline style={{ width: 320, height: 240, background: '#000' }} />
+      <div style={{ marginTop: 12, display: 'flex', gap: 12, justifyContent: 'center' }}>
+        <IconButton onClick={toggleAudio} style={{ color: 'black' }}>
+          {audio ? <MicIcon /> : <MicOffIcon />}
+        </IconButton>
+        <IconButton onClick={toggleVideo} style={{ color: 'black' }}>
+          {video ? <VideocamIcon /> : <VideocamOffIcon />}
+        </IconButton>
+      </div>
+      <div style={{ marginTop: 12 }}>
+        <div>
+          <label>Camera:&nbsp;</label>
+          <select value={selectedVideo} onChange={handleVideoChange}>
+            {videoDevices.map(device => (
+              <option key={device.deviceId} value={device.deviceId}>{device.label || 'Camera'}</option>
+            ))}
+          </select>
         </div>
-      ) : (
+        <div style={{ marginTop: 8 }}>
+          <label>Microphone:&nbsp;</label>
+          <select value={selectedAudio} onChange={handleAudioChange}>
+            {audioDevices.map(device => (
+              <option key={device.deviceId} value={device.deviceId}>{device.label || 'Microphone'}</option>
+            ))}
+          </select>
+        </div>
+      </div>
+    </div>
+    <Button variant="contained" onClick={getMedia} style={{ marginTop: 16 }}>Connect</Button>
+  </div>
+) : (
         <div className={styles.meetVideoContainer}>
           <div className={styles.buttonContainers}>
             <IconButton onClick={toggleAudio} style={{ color: 'white' }}>

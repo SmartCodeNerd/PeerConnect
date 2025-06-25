@@ -2,7 +2,7 @@ import "../App.css";
 import { Link, useNavigate } from "react-router-dom";
 import React from "react";
 
-const Landing = () => {
+const Welcome = () => {
   return (
     <div className="landingPageContainer"> 
       <nav>
@@ -42,4 +42,4 @@ const Landing = () => {
   );
 };
 
-export default Landing;
+export default Welcome;

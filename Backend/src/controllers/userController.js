@@ -2,8 +2,10 @@ import User from "../models/userModel.js";
 import httpStatus from "http-status";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
+import Meeting from "../models/meetingModel.js";
 
 const register = async (req,res) => {
+    console.log("CP-1");
     const {name,username,password} = req.body;
 
     if(!name || !username || !password) 
@@ -69,8 +71,49 @@ const logout = async (req,res) => {
     return res.status(httpStatus.OK).json({message:"Logged out Successfully"});
 }
 
+
+const getHistory = async (req,res) => { 
+    const {token} = req.query;
+
+    try {
+        const user = await User.findOne({token:token});
+        const meetings = await Meeting.findOne({userId:user._id});
+        res.json(meetings);
+    }
+    catch(e) {
+        console.log("Get History Error",e);
+        res.json({message:`Something Went Wrong-${e}`});
+    }
+}
+
+const addToUserHistory = async (req, res) => {
+    console.log("Req Body",req.body);
+    const { token, meetingCode } = req.body;
+    console.log("Req Body",req.body);
+    try {
+        const user = await User.findOne({ token: token });
+        if (!user) {
+            return res.status(httpStatus.UNAUTHORIZED).json({ message: "Invalid token" });
+        }
+
+        const newMeetingDetails = {
+            meetingCode:meetingCode,
+            userId: user._id, // Use userId (capital I) for consistency
+        };
+
+        await Meeting.create(newMeetingDetails);
+
+        res.status(httpStatus.CREATED).json({ message: "Added to History Details" });
+    } catch (e) {
+        console.log("Add To History Error", e);
+        res.status(500).json({ message: `Add To History Error-${e}` });
+    }
+};
+
 export {
     register,
     login,
-    logout
+    logout,
+    getHistory,
+    addToUserHistory
 };

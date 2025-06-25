@@ -10,6 +10,8 @@ import Typography from '@mui/material/Typography';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 import { AuthContext } from '../contexts/AuthContext';
 import { Snackbar } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
+
 
 const theme = createTheme({
   palette: {
@@ -92,6 +94,7 @@ export default function Authentication() {
   const [message, setMessage] = React.useState('');
   const [formState, setFormState] = React.useState(0);
   const [open, setOpen] = React.useState(false);
+  const navigate = useNavigate();
 
   const { handleRegister, handleLogin } = React.useContext(AuthContext);
 
@@ -99,6 +102,7 @@ export default function Authentication() {
     try {
       if (formState === 0) {
         await handleLogin(username, password);
+        navigate('/dashboard');
       }
       if (formState === 1) {
         const result = await handleRegister(name, username, password);

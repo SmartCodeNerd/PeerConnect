@@ -306,34 +306,57 @@ export default function VideoMeetComponent() {
   };
 
   const endCall = () => {
-    //Close All Peer Connections
-    for(let id in connections) {
-       if(connections[id]) {
-        connections[id].close();
-        delete connections[id];
-       }
+  // Close All Peer Connections
+  for(let id in connections) {
+    if(connections[id]) {
+      connections[id].close();
+      delete connections[id];
     }
-    
-    //Stops All Local Media Tracks
-    if(window.localStream) {
-      window.localStream.getTracks().forEach(track => track.stop());
-      window.localStream = null;
-    }
+  }
 
-    //Reset UI State
-    setVideos([]);
-    setAskForUsername(true);
-    getPermissions();
-    setShowModal(false);
-    setChatMessages([]);
-    setNewMessage(0);
-    //Optionaly disconnect the socket
-    if(socketRef.current) {
-      socketRef.current.disconnect();
-      socketRef.current = null;
+  // Stops All Local Media Tracks
+  if(window.localStream) {
+    window.localStream.getTracks().forEach(track => {
+      console.log('Stopping track:', track);
+      track.stop();
+    });
+    window.localStream = null;
+  }
+
+  // Extra: Stop all streams in all video elements (in case of browser bug)
+  document.querySelectorAll('video').forEach(video => {
+    if (video.srcObject) {
+      try {
+        video.srcObject.getTracks().forEach(track => track.stop());
+      } catch {}
+      video.srcObject = null;
     }
-    navigate('/afterCall');
-  };
+  });
+
+  // Reset UI State
+  setVideos([]);
+  setAskForUsername(true);
+  setShowModal(false);
+  setChatMessages([]);
+  setNewMessage(0);
+  setVideo(false);
+  setAudio(false);
+
+  // Optionally disconnect the socket
+  if(socketRef.current) {
+    socketRef.current.disconnect();
+    socketRef.current = null;
+  }
+
+  setTimeout(() => {
+  navigator.mediaDevices.enumerateDevices().then(devices => {
+    console.log('Devices after cleanup:', devices);
+  });
+}, 1000);
+
+
+  navigate('/afterCall');
+};
 
 
   

@@ -8,10 +8,8 @@ const withAuth = (WrappedComponent) => {
         const isAuthenticated = () => {
             if(localStorage.getItem("token"))
             {
-                console.log("Yes Token");
                 return true;
             }
-            console.log("No Token");
             return false;
         }
 

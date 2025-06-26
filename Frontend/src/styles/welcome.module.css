@@ -1,66 +1,4 @@
-// import "../App.css";
-// import { Link, useNavigate } from "react-router-dom";
-// import React from "react";
-
-// const Welcome = () => {
-//   return (
-//     <div className="landingPageContainer"> 
-//       <nav>
-//                 <div className='navHeader'>
-//                     <h2>PeerConnect</h2>
-//                 </div>
-//                 <div className='navlist'>
-//                     <p onClick={() => {
-//                         router("/aljk23")
-//                     }}>Join as Guest</p>
-//                     <p onClick={() => {
-//                         router("/auth")
-
-//                     }}>Register</p>
-//                     <div onClick={() => {
-//                         router("/auth")
-
-//                     }} role='button'>
-//                         <p>Login</p>
-//                     </div>
-//                 </div>
-//             </nav>
-
-//             <div className="landingMainContainer">
-//               <div className="mobileText">
-//                 <h1><span style={{color:"#D97500"}}>Connect</span> With Your Loved Ones</h1>
-//                 <p>Cover a distance by PeerConnect</p>
-//                 <div role='button' className="getStartedButton">
-//                   <Link to={"/auth"}>Get Started</Link>
-//                 </div>
-//               </div>
-//               <div className="mobileImage">
-//                 <img src="/mobile.png" alt="landing" />
-//               </div>
-//             </div>
-//     </div>
-//   );
-// };
-
-// export default Welcome;
-//------------------------old code above
-
-"use client"
-
-import { Video, Users, Shield, Smartphone, ArrowRight, Star, Heart } from "lucide-react";
-import { Link, useNavigate } from "react-router-dom";
-
-const Welcome = () => {
-  // const navigate = (path) => {
-  //   console.log(`Navigating to: ${path}`)
-  // }
-
-  const navigate = useNavigate();
-
-  return (
-    <>
-      <style jsx>{`
-        * {
+* {
           margin: 0;
           padding: 0;
           box-sizing: border-box;
@@ -68,7 +6,7 @@ const Welcome = () => {
 
         .landing-container {
           min-height: 100vh;
-          background: linear-gradient(to bottom right, #fff7ed, #fff1f2, #fffbeb);
+          background: linear-gradient(to bottom right, #ff9a56, #ffad56, #ffc056);
           position: relative;
           overflow: hidden;
         }
@@ -113,15 +51,14 @@ const Welcome = () => {
         }
 
         .header-container {
-          max-width: 100%;
-          margin: 0;
+          max-width: 1200px;
+          margin: 0 auto;
           padding: 0 2rem;
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding-top: 1rem;
           padding-bottom: 1rem;
-          width: 100%;
         }
 
         .nav-brand {
@@ -712,12 +649,8 @@ const Welcome = () => {
         /* Responsive Design */
         @media (max-width: 768px) {
           .header-container {
-            max-width: 100%;
-            margin: 0;
-            padding: 0 1rem;
             flex-direction: column;
             gap: 1rem;
-            justify-content: center;
           }
 
           .nav-menu {
@@ -772,165 +705,3 @@ const Welcome = () => {
             padding: 1rem;
           }
         }
-      `}</style>
-
-      <div className="landing-container">
-        {/* Header */}
-        <header className="header">
-          <div className="header-container">
-            <div className="nav-brand">
-              <div className="brand-logo">
-                <Video className="brand-icon" />
-              </div>
-              <div className="brand-text">
-                <h1>Mulakaat</h1>
-                <p>मुलाकात</p>
-              </div>
-            </div>
-            <nav className="nav-menu">
-              <a href="#features" className="nav-link">
-                Features
-              </a>
-              <a href="#about" className="nav-link">
-                About
-              </a>
-              <button className="nav-btn nav-btn-outline" onClick={() => navigate("/auth")}>
-                Sign In
-              </button>
-              <button className="nav-btn nav-btn-primary" onClick={() => navigate("/auth")}>
-                Register
-              </button>
-            </nav>
-          </div>
-        </header>
-
-        {/* Hero Section */}
-        <section className="hero-section">
-          <div className="hero-badge">
-            <Star className="badge-icon" />
-            <span className="badge-text">Made with ❤️ in India</span>
-            <Heart className="badge-icon" />
-          </div>
-
-          <h2 className="hero-title">
-            Connect with <span className="hero-title-gradient">Warmth</span>
-            <br />
-            <span className="hero-title-gradient-2">& Joy</span>
-          </h2>
-
-          <p className="hero-description">Video calling that brings people together, the Indian way</p>
-          <p className="hero-subtitle">🙏 नमस्ते से शुरू होने वाली हर मुलाकात</p>
-
-          <div className="hero-cta">
-            <button className="get-started-btn" onClick={() => navigate("/auth")}>
-              <Video className="btn-icon" />
-              Get Started
-            </button>
-          </div>
-
-          {/* Hero Demo */}
-          <div className="hero-demo">
-            <div className="demo-container">
-              <div className="demo-screen">
-                <div className="demo-grid">
-                  {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div key={i} className={`demo-participant demo-participant-${i}`}>
-                      <div className="participant-avatar">
-                        <Users className="avatar-icon" />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-                <div className="demo-controls">
-                  <button className="control-btn control-btn-end">End Call</button>
-                  <button className="control-btn control-btn-mute">Mute</button>
-                  <button className="control-btn control-btn-camera">Camera</button>
-                </div>
-              </div>
-            </div>
-            <div className="demo-decoration demo-decoration-1"></div>
-            <div className="demo-decoration demo-decoration-2"></div>
-            <div className="demo-decoration demo-decoration-3"></div>
-          </div>
-        </section>
-
-        {/* Features Section */}
-        <section id="features" className="features-section">
-          <div className="features-container">
-            <div className="features-title">
-              <h3>
-                Built for <span className="features-title-gradient">Everyone</span>
-              </h3>
-              <p>
-                From family gatherings to business meetings, Mulakaat makes every connection meaningful and colorful
-              </p>
-            </div>
-
-            <div className="features-grid">
-              <div className="feature-card feature-card-1">
-                <div className="feature-icon feature-icon-1">
-                  <Video />
-                </div>
-                <h4>Crystal Clear Video</h4>
-                <p>High-quality video calls that make you feel like you're in the same room, sharing the same warmth</p>
-              </div>
-
-              <div className="feature-card feature-card-2">
-                <div className="feature-icon feature-icon-2">
-                  <Shield />
-                </div>
-                <h4>Secure & Private</h4>
-                <p>
-                  End-to-end encryption ensures your conversations stay private and secure, just like family secrets
-                </p>
-              </div>
-
-              <div className="feature-card feature-card-3">
-                <div className="feature-icon feature-icon-3">
-                  <Smartphone />
-                </div>
-                <h4>Works Everywhere</h4>
-                <p>Join from any device - mobile, tablet, or desktop. No downloads required, just pure connection</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="cta-section">
-          <div className="cta-container">
-            <h3>Ready to start your first Mulakaat?</h3>
-            <p>Join millions who choose warmth and color over cold connections</p>
-            <button className="cta-btn" onClick={() => navigate("/auth")}>
-              Get Started Free
-              <ArrowRight className="btn-icon" />
-            </button>
-          </div>
-        </section>
-
-        {/* Footer */}
-        <footer className="footer">
-          <div className="footer-container">
-            <div className="footer-brand">
-              <div className="brand-logo">
-                <Video className="brand-icon" />
-              </div>
-              <div>
-                <h4>Mulakaat</h4>
-                <p>मुलाकात</p>
-              </div>
-            </div>
-            <div className="footer-text">
-              <p>
-                &copy; 2024 Mulakaat. Made with <span className="footer-heart">❤️</span> in{" "}
-                <span className="footer-india">India</span>
-              </p>
-            </div>
-          </div>
-        </footer>
-      </div>
-    </>
-  )
-}
-
-export default Welcome

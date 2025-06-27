@@ -68,7 +68,7 @@ const Welcome = () => {
 
         .landing-container {
           min-height: 100vh;
-          background: linear-gradient(to bottom right, #fff7ed, #fff1f2, #fffbeb);
+          background: linear-gradient(to bottom right, #f2e6d8, #f4d9dc, #f3e6c6);
           position: relative;
           overflow: hidden;
         }

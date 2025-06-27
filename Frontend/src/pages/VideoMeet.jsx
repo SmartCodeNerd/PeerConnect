@@ -16,6 +16,22 @@ import StopScreenShareIcon from '@mui/icons-material/StopScreenShare';
 import ChatIcon from '@mui/icons-material/Chat';
 import styles from '../styles/videoComponent.module.css';
 import { useNavigate } from 'react-router-dom';
+import {
+  Video,
+  VideoOff,
+  Mic,
+  MicOff,
+  Monitor,
+  MonitorOff,
+  MessageCircle,
+  Phone,
+  Users,
+  Star,
+  Heart,
+  MoreHorizontal,
+  ChevronDown,
+} from "lucide-react"
+
 
 const serverUrl = 'http://localhost:3000';
 
@@ -34,6 +50,7 @@ export default function VideoMeetComponent() {
 
   const [username, setUsername] = useState('');
   const [askForUsername, setAskForUsername] = useState(true);
+  const [showLobby, setShowLobby] = useState(true);
 
   const [videoAvailable, setVideoAvailable] = useState(true);
   const [audioAvailable, setAudioAvailable] = useState(true);
@@ -51,6 +68,11 @@ export default function VideoMeetComponent() {
   const [videoDevices, setVideoDevices] = useState([]);
   const [selectedAudio, setSelectedAudio] = useState('');
   const [selectedVideo, setSelectedVideo] = useState('');
+
+  const mockChatMessages = [
+    { sender: "John Doe", data: "Hello everyone!" },
+    { sender: "Jane Smith", data: "Great to see you all" },
+  ]
 
   const getPermissions = async () => {
     try {
@@ -358,9 +380,6 @@ export default function VideoMeetComponent() {
   navigate('/afterCall');
 };
 
-
-  
-
   function VideoPlayer({ stream }) {
   const ref = useRef();
 
@@ -421,110 +440,982 @@ export default function VideoMeetComponent() {
   }, []);
 
   return (
-    <div>
-      {askForUsername ? (
-  <div className="videoParent">
-    <h2>Enter Into Lobby</h2>
-    <TextField label="Username" value={username} onChange={e => setUsername(e.target.value)} />
-    <div className="videoDiv">
-      <video ref={localVideoRef} autoPlay muted playsInline style={{ width: 320, height: 240, background: '#000' }} />
-      <div style={{ marginTop: 12, display: 'flex', gap: 12, justifyContent: 'center' }}>
-        <IconButton onClick={toggleAudio} style={{ color: 'black' }}>
-          {audio ? <MicIcon /> : <MicOffIcon />}
-        </IconButton>
-        <IconButton onClick={toggleVideo} style={{ color: 'black' }}>
-          {video ? <VideocamIcon /> : <VideocamOffIcon />}
-        </IconButton>
-      </div>
-      <div style={{ marginTop: 12 }}>
-        <div>
-          <label>Camera:&nbsp;</label>
-          <select value={selectedVideo} onChange={handleVideoChange}>
-            {videoDevices.map(device => (
-              <option key={device.deviceId} value={device.deviceId}>{device.label || 'Camera'}</option>
-            ))}
-          </select>
-        </div>
-        <div style={{ marginTop: 8 }}>
-          <label>Microphone:&nbsp;</label>
-          <select value={selectedAudio} onChange={handleAudioChange}>
-            {audioDevices.map(device => (
-              <option key={device.deviceId} value={device.deviceId}>{device.label || 'Microphone'}</option>
-            ))}
-          </select>
-        </div>
-      </div>
-    </div>
-    <Button variant="contained" onClick={getMedia} style={{ marginTop: 16 }}>Connect</Button>
-  </div>
-) : (
-        <div className={styles.meetVideoContainer}>
-          <div className={styles.buttonContainers}>
-            <IconButton onClick={toggleAudio} style={{ color: 'white' }}>
-            {audio ? <MicIcon /> : <MicOffIcon />}
-            </IconButton>
-            <IconButton onClick={toggleVideo} style={{ color: 'white' }}>
-            {video ? <VideocamIcon /> : <VideocamOffIcon />}
-            </IconButton>
-            <IconButton
-              onClick={screen ? undefined : startScreenShare}
-              style={{ color: 'white' }}
-              disabled={screen}
-            >
-              {screen ? <StopScreenShareIcon /> : <ScreenShareIcon />}
-            </IconButton>
-            <Badge badgeContent={newMessage} color="error">
-              <IconButton onClick={() => setShowModal(!showModal)} style={{ color: 'white' }}>
-                <ChatIcon />
-              </IconButton>
-            </Badge>
-            <IconButton onClick={endCall} style={{ color: 'red' }}><CallEndIcon /></IconButton>
-          </div>
+    <>
+      <style jsx>{`
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
 
-          <div className={styles.localVideoBox}>
-            <h2>You</h2>
-            <video ref={localVideoRef} autoPlay muted playsInline className={styles.localVideo} />
-          </div>
+        .video-meet-container {
+          width: 100vw;
+          height: 100vh;
+          background:rgba(255, 255, 255, 0.95);
+          position: fixed;
+          top: 0;
+          left: 0;
+          overflow: hidden;
+        }
 
-          <div className={styles.remoteContainer}>
-            {videos.map(({ socketId, stream }) => (
-              <div className={styles.remoteBox} key={socketId}>
-                <h2>{socketId}</h2>
-                <VideoPlayer stream={stream} />
+        /* Background decorative elements */
+        .video-meet-container::before {
+          content: "";
+          position: absolute;
+          top: -50%;
+          right: -50%;
+          width: 100%;
+          height: 100%;
+          background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+          animation: float 6s ease-in-out infinite;
+        }
+
+        .video-meet-container::after {
+          content: "";
+          position: absolute;
+          bottom: -30%;
+          left: -30%;
+          width: 60%;
+          height: 60%;
+          background: radial-gradient(circle, rgba(255, 107, 53, 0.2) 0%, transparent 70%);
+          animation: float 8s ease-in-out infinite reverse;
+        }
+
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(5deg); }
+        }
+
+        /* Header */
+        .lobby-header {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          height: 80px;
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(10px);
+          border-bottom: 1px solid rgba(255, 107, 53, 0.2);
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 0 2rem;
+          z-index: 100;
+        }
+
+        .brand-section {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+        }
+
+        .brand-logo {
+          width: 3rem;
+          height: 3rem;
+          background: linear-gradient(135deg, #ff6b35, #f7931e, #ffd23f);
+          border-radius: 1rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 15px rgba(255, 107, 53, 0.4);
+        }
+
+        .brand-icon {
+          width: 1.75rem;
+          height: 1.75rem;
+          color: white;
+        }
+
+        .brand-text h1 {
+          font-size: 2rem;
+          font-weight: 700;
+          background: linear-gradient(45deg, #ff6b35, #f7931e, #ffd23f);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          margin: 0;
+        }
+
+        .brand-text p {
+          font-size: 0.75rem;
+          color: rgba(255, 107, 53, 0.8);
+          font-weight: 500;
+          margin: -0.25rem 0 0 0;
+        }
+
+        .user-info {
+          display: flex;
+          align-items: center;
+          gap: 1rem;
+          color: #374151;
+          font-weight: 500;
+        }
+
+        /* Lobby Layout */
+        .lobby-container {
+          width: 100vw;
+          height: 100vh;
+          display: grid;
+          grid-template-columns: 1fr 400px;
+          position: relative;
+          z-index: 10;
+        }
+
+        /* Video Section */
+        .video-section {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          padding: 2rem;
+          padding-top: 120px;
+          padding-bottom: 120px;
+        }
+
+        .video-container {
+          position: relative;
+          width: 100%;
+          max-width: 800px;
+          aspect-ratio: 16/9;
+          background: #000;
+          border-radius: 2rem;
+          overflow: hidden;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+          // border: 3px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .local-video {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .video-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: linear-gradient(
+            to bottom,
+            rgba(0, 0, 0, 0.3) 0%,
+            transparent 30%,
+            transparent 70%,
+            rgba(0, 0, 0, 0.5) 100%
+          );
+          pointer-events: none;
+        }
+
+        .username-display {
+          position: absolute;
+          top: 1.5rem;
+          left: 1.5rem;
+          // background: rgba(0, 0, 0, 0.7);
+          color: white;
+          padding: 0.75rem 1.25rem;
+          border-radius: 1rem;
+          font-size: 1.25rem;
+          font-weight: 500;
+          // backdrop-filter: blur(10px);
+        }
+
+        .video-controls {
+          position: absolute;
+          bottom: 1.5rem;
+          left: 50%;
+          transform: translateX(-50%);
+          display: flex;
+          gap: 1rem;
+          align-items: center;
+        }
+
+        .control-btn {
+          width: 3.5rem;
+          height: 3.5rem;
+          border-radius: 50%;
+          border: none;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+          backdrop-filter: blur(10px);
+        }
+
+        .control-btn-audio {
+          background: ${audio ? "rgba(255, 255, 255, 0.2)" : "rgba(255, 107, 107, 0.9)"};
+          color: ${audio ? "white" : "white"};
+          border: 2px solid ${audio ? "rgba(255, 255, 255, 0.3)" : "transparent"};
+        }
+
+        .control-btn-video {
+          background: ${video ? "rgba(255, 255, 255, 0.2)" : "rgba(255, 107, 107, 0.9)"};
+          color: ${video ? "white" : "white"};
+          border: 2px solid ${video ? "rgba(255, 255, 255, 0.3)" : "transparent"};
+        }
+
+        .control-btn-more {
+          background: rgba(255, 255, 255, 0.2);
+          color: white;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .control-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        /* Device Settings */
+        .device-settings {
+          margin-top: 2rem;
+          display: flex;
+          gap: 1rem;
+          justify-content: center;
+          flex-wrap: wrap;
+          max-width: 800px;
+          width: 100%;
+        }
+
+        .device-group {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          background: rgba(255, 255, 255, 0.9);
+          padding: 0.75rem 1rem;
+          border-radius: 0.5rem;
+          border: 1px solid rgba(0, 0, 0, 0.1);
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+          min-width: 180px;
+          flex: 1;
+          max-width: 250px;
+          cursor: pointer;
+          transition: all 0.2s ease;
+        }
+
+        .device-group:hover {
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+          border-color: rgba(255, 107, 53, 0.3);
+       }
+
+        .device-icon {
+          width: 1.125rem;
+          height: 1.125rem;
+          color: #5f6368;
+          flex-shrink: 0;
+       }
+
+        .device-select {
+          border: none;
+          background: transparent;
+          font-size: 0.875rem;
+          font-weight: 400;
+          color: #3c4043;
+          outline: none;
+          cursor: pointer;
+          flex: 1;
+          min-width: 0;
+          appearance: none;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
+        }
+
+        .device-select option {
+          color: #3c4043;
+          background: white;
+          padding: 0.5rem;
+        }
+
+        .device-chevron {
+          width: 1rem;
+          height: 1rem;
+          color: #5f6368;
+          flex-shrink: 0;
+          margin-left: 0.25rem;
+       }
+
+        /* Join Panel */
+        .join-panel {
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(20px);
+          //border-left: 1px solid rgba(255, 107, 53, 0.2);
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          padding: 3rem 2rem;
+          position: relative;
+          margin-right:5rem;
+        }
+
+        .join-content {
+          text-align: center;
+          max-width: 300px;
+        }
+
+        .ready-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 0.5rem;
+          background: linear-gradient(45deg, rgba(255, 107, 53, 0.1), rgba(247, 147, 30, 0.1));
+          padding: 0.5rem 1rem;
+          border-radius: 50px;
+          border: 2px solid rgba(255, 107, 53, 0.2);
+          margin-bottom: 2rem;
+        }
+
+        .badge-icon {
+          width: 1rem;
+          height: 1rem;
+        }
+
+        .badge-icon:first-child {
+          color: #ffd23f;
+          fill: currentColor;
+        }
+
+        .badge-icon:last-child {
+          color: #ff6b35;
+          fill: currentColor;
+        }
+
+        .badge-text {
+          color: #ff6b35;
+          font-weight: 500;
+          font-size: 0.875rem;
+        }
+
+        .ready-title {
+          font-size: 2rem;
+          font-weight: 600;
+          color: #374151;
+          margin-bottom: 1rem;
+        }
+
+        .ready-subtitle {
+          color: #6b7280;
+          font-size: 1.125rem;
+          margin-bottom: 2rem;
+          line-height: 1.6;
+        }
+
+        .username-input {
+          width: 100%;
+          padding: 1rem 1.5rem;
+          border: 2px solid rgba(255, 107, 53, 0.2);
+          border-radius: 1rem;
+          font-size: 1rem;
+          background: rgba(255, 255, 255, 0.8);
+          transition: all 0.3s ease;
+          outline: none;
+          margin-bottom: 2rem;
+        }
+
+        .username-input:focus {
+          border-color: #ff6b35;
+          box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+          background: white;
+        }
+
+        .join-btn {
+          background: linear-gradient(45deg, #ff6b35, #f7931e, #ffd23f, #e91e63);
+          background-size: 300% 300%;
+          animation: gradientButton 3s ease infinite;
+          color: white;
+          border: none;
+          padding: 1rem 3rem;
+          border-radius: 1rem;
+          font-size: 1.125rem;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4);
+          width: 100%;
+        }
+
+        @keyframes gradientButton {
+          0% { background-position: 0% 50%; }
+          50% { background-position: 100% 50%; }
+          100% { background-position: 0% 50%; }
+        }
+
+        .join-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 12px 35px rgba(255, 107, 53, 0.6);
+        }
+
+        .join-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+          transform: none;
+        }
+
+        /* Meeting Room Styles */
+        .meeting-container {
+          min-height: 100vh;
+          background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+          position: relative;
+          display: flex;
+          flex-direction: column;
+        }
+
+        .meeting-header {
+          background: rgba(0, 0, 0, 0.8);
+          backdrop-filter: blur(10px);
+          padding: 1rem 2rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .meeting-brand {
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+        }
+
+        .meeting-info {
+          color: white;
+          font-size: 0.875rem;
+        }
+
+        .participants-count {
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
+          background: rgba(255, 107, 53, 0.2);
+          padding: 0.5rem 1rem;
+          border-radius: 1rem;
+          border: 1px solid rgba(255, 107, 53, 0.3);
+        }
+
+        .meeting-content {
+          flex: 1;
+          display: grid;
+          grid-template-columns: 1fr 300px;
+          gap: 1rem;
+          padding: 1rem;
+          position: relative;
+        }
+
+        .video-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 1rem;
+          height: fit-content;
+        }
+
+        .video-card {
+          background: rgba(0, 0, 0, 0.8);
+          border-radius: 1rem;
+          overflow: hidden;
+          position: relative;
+          aspect-ratio: 16/9;
+          border: 2px solid rgba(255, 255, 255, 0.1);
+          transition: all 0.3s ease;
+        }
+
+        .video-card:hover {
+          border-color: rgba(255, 107, 53, 0.5);
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(255, 107, 53, 0.2);
+        }
+
+        .video-card.local {
+          border-color: rgba(255, 107, 53, 0.5);
+          box-shadow: 0 4px 15px rgba(255, 107, 53, 0.2);
+        }
+
+        .video-label {
+          position: absolute;
+          bottom: 1rem;
+          left: 1rem;
+          background: rgba(0, 0, 0, 0.8);
+          color: white;
+          padding: 0.5rem 1rem;
+          border-radius: 0.5rem;
+          font-size: 0.875rem;
+          font-weight: 500;
+          z-index: 10;
+        }
+
+        .local-video-meeting {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+        }
+
+        .sidebar {
+          background: rgba(0, 0, 0, 0.8);
+          border-radius: 1rem;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          overflow: hidden;
+        }
+
+        .controls-container {
+          position: fixed;
+          bottom: 2rem;
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(0, 0, 0, 0.9);
+          backdrop-filter: blur(20px);
+          border-radius: 2rem;
+          padding: 1rem 2rem;
+          display: flex;
+          gap: 1rem;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+          box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+          z-index: 100;
+        }
+
+        .meeting-control-btn {
+          width: 3.5rem;
+          height: 3.5rem;
+          border-radius: 50%;
+          border: none;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: relative;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .control-btn-mic {
+          background: ${audio ? "linear-gradient(45deg, #51cf66, #40c057)" : "linear-gradient(45deg, #ff6b6b, #ee5a52)"};
+          color: white;
+        }
+
+        .control-btn-cam {
+          background: ${video ? "linear-gradient(45deg, #339af0, #228be6)" : "linear-gradient(45deg, #ff6b6b, #ee5a52)"};
+          color: white;
+        }
+
+        .control-btn-screen {
+          background: ${screen ? "linear-gradient(45deg, #ffd23f, #ff6b35)" : "linear-gradient(45deg, #6b7280, #4b5563)"};
+          color: white;
+        }
+
+        .control-btn-chat {
+          background: linear-gradient(45deg, #667eea, #764ba2);
+          color: white;
+          position: relative;
+        }
+
+        .control-btn-end {
+          background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+          color: white;
+        }
+
+        .meeting-control-btn:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .meeting-control-btn:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+          transform: none;
+        }
+
+        .chat-badge {
+          position: absolute;
+          top: -0.5rem;
+          right: -0.5rem;
+          background: #ff6b35;
+          color: white;
+          border-radius: 50%;
+          width: 1.5rem;
+          height: 1.5rem;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.75rem;
+          font-weight: 600;
+          border: 2px solid rgba(0, 0, 0, 0.9);
+        }
+
+        /* Chat Modal */
+        .chat-modal {
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          background: rgba(255, 255, 255, 0.95);
+          backdrop-filter: blur(20px);
+          border-radius: 1.5rem;
+          width: 90%;
+          max-width: 500px;
+          height: 70vh;
+          border: 2px solid rgba(255, 107, 53, 0.2);
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+          z-index: 1000;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
+
+        .chat-header {
+          background: linear-gradient(45deg, #ff6b35, #f7931e, #ffd23f);
+          color: white;
+          padding: 1rem 1.5rem;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
+
+        .chat-title {
+          font-size: 1.25rem;
+          font-weight: 600;
+          margin: 0;
+        }
+
+        .chat-close-btn {
+          background: rgba(255, 255, 255, 0.2);
+          color: white;
+          border: none;
+          padding: 0.5rem 1rem;
+          border-radius: 0.5rem;
+          cursor: pointer;
+          font-weight: 500;
+          transition: all 0.3s ease;
+        }
+
+        .chat-close-btn:hover {
+          background: rgba(255, 255, 255, 0.3);
+        }
+
+        .chat-body {
+          flex: 1;
+          padding: 1rem;
+          overflow-y: auto;
+          display: flex;
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+
+        .chat-message {
+          background: rgba(255, 107, 53, 0.1);
+          padding: 0.75rem 1rem;
+          border-radius: 1rem;
+          border: 1px solid rgba(255, 107, 53, 0.2);
+        }
+
+        .chat-sender {
+          font-weight: 600;
+          color: #ff6b35;
+          margin-bottom: 0.25rem;
+        }
+
+        .chat-text {
+          color: #374151;
+        }
+
+        .chat-input-container {
+          padding: 1rem 1.5rem;
+          border-top: 1px solid rgba(255, 107, 53, 0.2);
+          display: flex;
+          gap: 0.75rem;
+        }
+
+        .chat-input {
+          flex: 1;
+          padding: 0.75rem 1rem;
+          border: 2px solid rgba(255, 107, 53, 0.2);
+          border-radius: 1rem;
+          outline: none;
+          font-size: 0.875rem;
+          background: rgba(255, 255, 255, 0.8);
+          transition: all 0.3s ease;
+        }
+
+        .chat-input:focus {
+          border-color: #ff6b35;
+          box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+        }
+
+        .chat-send-btn {
+          background: linear-gradient(45deg, #ff6b35, #f7931e);
+          color: white;
+          border: none;
+          padding: 0.75rem 1.5rem;
+          border-radius: 1rem;
+          cursor: pointer;
+          font-weight: 500;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+        }
+
+        .chat-send-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(255, 107, 53, 0.5);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+          .lobby-container {
+            grid-template-columns: 1fr 350px;
+          }
+        }
+
+        @media (max-width: 768px) {
+          .lobby-container {
+            grid-template-columns: 1fr;
+            grid-template-rows: 1fr auto;
+          }
+
+          .join-panel {
+            border-left: none;
+            border-top: 1px solid rgba(255, 107, 53, 0.2);
+            padding: 2rem;
+          }
+
+          .video-section {
+            padding: 1rem;
+            padding-top: 100px;
+            padding-bottom: 1rem;
+          }
+
+          .device-settings {
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+          }
+
+          .ready-title {
+            font-size: 2rem;
+          }
+
+          .meeting-content {
+            grid-template-columns: 1fr;
+            padding: 0.5rem;
+          }
+
+          .sidebar {
+            order: -1;
+            height: 200px;
+          }
+
+          .controls-container {
+            padding: 0.75rem 1rem;
+            gap: 0.75rem;
+          }
+
+          .meeting-control-btn {
+            width: 3rem;
+            height: 3rem;
+          }
+
+          .chat-modal {
+            width: 95%;
+            height: 80vh;
+          }
+        }
+      `}</style>
+
+      <div className="video-meet-container">
+        {askForUsername ? (
+          <>
+            {/* Header */}
+            <div className="lobby-header">
+              <div className="brand-section">
+                <div className="brand-logo">
+                  <Video className="brand-icon" />
+                </div>
+                <div className="brand-text">
+                  <h1>Mulakaat</h1>
+                  <p>मुलाकात</p>
+                </div>
               </div>
-            ))}
-          </div>
+              {/* <div className="user-info">
+                <span>Ready to connect with warmth & joy</span>
+              </div> */}
+            </div>
 
-          {/* Chat modal */}
-          {showModal && (
-            <div className={styles.chatModal}>
-              <div className={styles.chatHeader}>
-                <h3>Chat</h3>
-                <Button onClick={() => setShowModal(false)}>Close</Button>
+            {/* Lobby Layout */}
+            <div className="lobby-container">
+              {/* Video Section */}
+              <div className="video-section">
+                <div className="video-container">
+                  <video ref={localVideoRef} autoPlay muted playsInline className="local-video" />
+                  <div className="video-overlay" />
+
+                  {username && <div className="username-display">{username}</div>}
+
+                  <div className="video-controls">
+                    <button className="control-btn control-btn-audio" onClick={toggleAudio}>
+                      {audio ? <Mic size={20} /> : <MicOff size={20} />}
+                    </button>
+                    <button className="control-btn control-btn-video" onClick={toggleVideo}>
+                      {video ? <Video size={20} /> : <VideoOff size={20} />}
+                    </button>
+                    {/* <button className="control-btn control-btn-more">
+                      <MoreHorizontal size={20} />
+                    </button> */}
+                  </div>
+                </div>
+
+                <div className="device-settings">
+                  <div className="device-group">
+                    <Mic className="device-icon" />
+                    <select className="device-select" value={selectedAudio} onChange={handleAudioChange}>
+                      {audioDevices.map((device) => (
+                        <option key={device.deviceId} value={device.deviceId}>
+                          {device.label || "Microphone"}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown size={16} color="#ff6b35" />
+                  </div>
+                  <div className="device-group">
+                    <Video className="device-icon" />
+                    <select className="device-select" value={selectedVideo} onChange={handleVideoChange}>
+                      {videoDevices.map((device) => (
+                        <option key={device.deviceId} value={device.deviceId}>
+                          {device.label || "Camera"}
+                        </option>
+                      ))}
+                    </select>
+                    {/* <ChevronDown size={16} color="#ff6b35" /> */}
+                  </div>
+                </div>
               </div>
-              <div className={styles.chatBody}>
-                {chatMessages.map((msg, idx) => (
-                  <div key={idx} className={styles.chatMessage}>
-                    <b>{msg.sender}:</b> {msg.data}
+
+              {/* Join Panel */}
+              <div className="join-panel">
+                <div className="join-content">
+                  {/* <div className="ready-badge">
+                    <Star className="badge-icon" />
+                    <span className="badge-text">Ready to join?</span>
+                    <Heart className="badge-icon" />
+                  </div> */}
+
+                  <h2 className="ready-title">Ready to Join?</h2>
+                  {/* <p className="ready-subtitle">Enter your name and join the conversation with warmth and joy</p> */}
+
+                  <input
+                    type="text"
+                    className="username-input"
+                    placeholder="Your name"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                  />
+
+                  <button className="join-btn" onClick={getMedia} disabled={!username.trim()}>
+                    Join Now
+                  </button>
+                </div>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className="meeting-container">
+            {/* Meeting Header */}
+            <div className="meeting-header">
+              <div className="meeting-brand">
+                <div className="brand-logo">
+                  <Video className="brand-icon" />
+                </div>
+                <div className="brand-text">
+                  <h1>Mulakaat</h1>
+                  <p>मुलाकात</p>
+                </div>
+              </div>
+              <div className="meeting-info">
+                <div className="participants-count">
+                  <Users size={16} />
+                  <span>{videos.length + 1} participants</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Meeting Content */}
+            <div className="meeting-content">
+              <div className="video-grid">
+                {/* Local Video */}
+                <div className="video-card local">
+                  <video ref={localVideoRef} autoPlay muted playsInline className="local-video-meeting" />
+                  <div className="video-label">You</div>
+                </div>
+
+                {/* Remote Videos */}
+                {videos.map(({ socketId, stream }) => (
+                  <div className="video-card" key={socketId}>
+                    <VideoPlayer stream={stream} />
+                    <div className="video-label">{socketId}</div>
                   </div>
                 ))}
               </div>
-              <div className={styles.chatInput}>
-                <TextField
-                  value={chatInput}
-                  onChange={e => setChatInput(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') sendChatMessage(); }}
-                  placeholder="Type a message..."
-                  fullWidth
-                />
-                <Button onClick={sendChatMessage} variant="contained">Send</Button>
-              </div>
+
+              <div className="sidebar">{/* Sidebar content can be added here */}</div>
             </div>
-          )}
 
+            {/* Controls */}
+            <div className="controls-container">
+              <button className="meeting-control-btn control-btn-mic" onClick={toggleAudio}>
+                {audio ? <Mic size={20} /> : <MicOff size={20} />}
+              </button>
+              <button className="meeting-control-btn control-btn-cam" onClick={toggleVideo}>
+                {video ? <Video size={20} /> : <VideoOff size={20} />}
+              </button>
+              <button
+                className="meeting-control-btn control-btn-screen"
+                onClick={screen ? undefined : startScreenShare}
+                disabled={screen}
+              >
+                {screen ? <MonitorOff size={20} /> : <Monitor size={20} />}
+              </button>
+              <button className="meeting-control-btn control-btn-chat" onClick={() => setShowModal(!showModal)}>
+                <MessageCircle size={20} />
+                {newMessage > 0 && <div className="chat-badge">{newMessage}</div>}
+              </button>
+              <button className="meeting-control-btn control-btn-end" onClick={endCall}>
+                <Phone size={20} />
+              </button>
+            </div>
 
-        </div>
-      )}
-    </div>
-  );
+            {/* Chat Modal */}
+            {showModal && (
+              <div className="chat-modal">
+                <div className="chat-header">
+                  <h3 className="chat-title">Chat</h3>
+                  <button className="chat-close-btn" onClick={() => setShowModal(false)}>
+                    Close
+                  </button>
+                </div>
+                <div className="chat-body">
+                  {chatMessages.map((msg, idx) => (
+                    <div key={idx} className="chat-message">
+                      <div className="chat-sender">{msg.sender}:</div>
+                      <div className="chat-text">{msg.data}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="chat-input-container">
+                  <input
+                    type="text"
+                    className="chat-input"
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") sendChatMessage()
+                    }}
+                    placeholder="Type a message..."
+                  />
+                  <button className="chat-send-btn" onClick={sendChatMessage}>
+                    Send
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </>
+  )
+
 }
+

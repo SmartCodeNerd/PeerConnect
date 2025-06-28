@@ -63,6 +63,8 @@ export const AuthProvider = ({ children }) => {
 
   const addToUserHistory = async (meetingCode) => {
     try {
+      console.log("Hare Krishna");
+      console.log("hk",meetingCode);
       let request = await client.post('/add-to-activity', {
         token: localStorage.getItem('token'),
         meetingCode,
@@ -73,6 +75,24 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const submitFeedback = async (stars, message, meetCode) => {
+    try {
+      const token = localStorage.getItem("token");
+      console.log(stars,message,meetCode);
+      const request = await client.post('/add-feedback', {
+        stars,
+        meetCode,
+        message,
+        token, // Send token if you extract user from token in backend
+      });
+      return request.data;
+    } catch (err) {
+      throw err;
+    }
+  };
+
+
+
   const data = {
     userData,
     setUserData,
@@ -80,6 +100,7 @@ export const AuthProvider = ({ children }) => {
     getHistoryOfUser,
     handleRegister,
     handleLogin,
+    submitFeedback
   };
 
   return <AuthContext.Provider value={data}>{children}</AuthContext.Provider>;

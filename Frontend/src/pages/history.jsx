@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom"
 import { AuthContext } from "../contexts/AuthContext.jsx";
 import { useContext } from "react";
 import withAuth from "../utils/withAuth.jsx";
+import dayjs from "dayjs";
 
 const History = () => {
   const navigate = useNavigate();
@@ -43,22 +44,29 @@ const History = () => {
   }
 
   const formatDate = (dateString) => {
-    const date = new Date(dateString)
-    const now = new Date()
-    const diffTime = Math.abs(now - date)
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  const date = new Date(dateString);
+  const now = new Date();
 
-    if (diffDays === 1) return "Yesterday"
-    if (diffDays <= 7) return `${diffDays} days ago`
+  // Remove time from both
+  const dateOnly = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const nowOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-    return date.toLocaleDateString("en-IN", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    })
-  }
+  const diffTime = nowOnly - dateOnly;
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Yesterday";
+  if (diffDays < 7) return `${diffDays} days ago`;
+
+  return date.toLocaleDateString("en-IN", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
 
   return (
     <>

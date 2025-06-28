@@ -1,25 +1,34 @@
 "use client"
 
 import { Video, Star, Heart, Send, ArrowLeft } from "lucide-react"
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useState,useContext } from "react"
+import { useNavigate,useLocation } from "react-router-dom"
+import { AuthContext } from "../contexts/AuthContext"
 
 const Feedback = () => {
   const [rating, setRating] = useState(0)
   const [message, setMessage] = useState("")
   const [submitted, setSubmitted] = useState(false)
   const navigate = useNavigate()
+  const location = useLocation();
+  const { meetCode } = location.state || {};
+  const { submitFeedback } = useContext(AuthContext);
 
   const handleStarClick = (star) => {
     setRating(star);
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    // Send rating and message to backend here if needed
-    setSubmitted(true)
-    setTimeout(() => navigate("/dashboard"), 1500)
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    await submitFeedback(rating, message,meetCode);
+    setSubmitted(true);
+    setTimeout(() => navigate("/dashboard"), 1500);
+  } catch (err) {
+    console.error("Feedback error:", err);
+    alert("Failed to submit feedback.");
   }
+};
 
   return (
     <>
@@ -187,7 +196,7 @@ const Feedback = () => {
           border: 2px solid rgba(255, 255, 255, 0.3);
           position: relative;
           z-index: 10;
-          overflow: hidden;
+          //overflow: hidden;
           display: flex;
           flex-direction: column;
           justify-content: center;
@@ -534,13 +543,13 @@ const Feedback = () => {
 
       <div className="feedback-container">
         {/* Back Button */}
-        <button className="back-btn" onClick={() => navigate("/dashboard")}>
+        {/* <button className="back-btn" onClick={() => navigate("/dashboard")}>
           <ArrowLeft className="back-icon" />
-        </button>
+        </button> */}
 
         {/* Header */}
         <div className="feedback-header">
-          <div className="brand-section">
+          {/* <div className="brand-section">
             <div className="brand-logo">
               <Video className="brand-icon" />
             </div>
@@ -548,13 +557,13 @@ const Feedback = () => {
               <h1>Mulakaat</h1>
               <p>मुलाकात</p>
             </div>
-          </div>
+          </div> */}
 
-          <div className="feedback-badge">
+          {/* <div className="feedback-badge">
             <Star className="badge-icon" />
             <span className="badge-text">Share Your Experience</span>
             <Heart className="badge-icon" />
-          </div>
+          </div> */}
 
           <h2 className="feedback-title">
             Your <span className="title-gradient">Feedback</span> Matters

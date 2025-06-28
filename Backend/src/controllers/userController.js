@@ -3,6 +3,7 @@ import httpStatus from "http-status";
 import bcrypt from "bcrypt";
 import crypto from "crypto";
 import Meeting from "../models/meetingModel.js";
+import Feedback from "../models/feedbackModel.js";
 
 const register = async (req,res) => {
     console.log("CP-1");
@@ -95,6 +96,8 @@ const addToUserHistory = async (req, res) => {
     //console.log("Req Body",req.body);
     const { token, meetingCode } = req.body;
     //console.log("Req Body",req.body);
+    console.log("Coming");
+    console.log(req.body);
     try {
         const user = await User.findOne({ token: token });
         if (!user) {
@@ -117,10 +120,52 @@ const addToUserHistory = async (req, res) => {
     }
 };
 
+const addFeedback = async (req, res) => {
+  try {
+    console.log("Add feedback");
+    const { meetCode, stars, message, token } = req.body;
+    console.log(req.body);
+    const user = await User.findOne({ token: token });
+    if (!user) {
+        return res.status(httpStatus.UNAUTHORIZED).json({ message: "Invalid token" });
+    }
+
+    const meeting = await Meeting.findOne({meetingCode:meetCode});
+    if (!meeting) {
+        return res.status(httpStatus.UNAUTHORIZED).json({ message: "Invalid Meeting Code" });
+    }
+    console.log(meeting);
+
+    // Basic validation for required fields
+    if (!stars || stars < 1 || stars > 5) {
+      return res.status(400).json({ message: "Stars must be between 1 and 5." });
+    }
+
+    const feedback = new Feedback({
+      user: user._id || undefined,         // optional
+      meeting: meeting._id || undefined,   // optional
+      stars,
+      message,
+    });
+
+    await feedback.save();
+
+    return res.status(201).json({
+      message: "Feedback submitted successfully",
+      feedback,
+    });
+  } catch (error) {
+    console.error("Error saving feedback:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
 export {
     register,
     login,
     logout,
     getHistory,
-    addToUserHistory
+    addToUserHistory,
+    addFeedback
 };

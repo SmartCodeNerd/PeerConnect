@@ -222,7 +222,7 @@ const Welcome = () => {
           max-width: 1200px;
           margin: 0 auto;
           padding: 0 2rem;
-          padding-top: 5rem;
+          padding-top: 3rem;
           text-align: center;
           position: relative;
           z-index: 10;
@@ -232,7 +232,7 @@ const Welcome = () => {
           display: inline-flex;
           align-items: center;
           gap: 0.5rem;
-          background: linear-gradient(45deg, rgba(255, 107, 53, 0.1), rgba(247, 147, 30, 0.1));
+          background: white;
           padding: 0.75rem 1.5rem;
           border-radius: 50px;
           border: 2px solid rgba(255, 107, 53, 0.2);
@@ -261,7 +261,7 @@ const Welcome = () => {
         }
 
         .hero-title {
-          font-size: 6rem;
+          font-size: 5rem;
           font-weight: 800;
           color: #374151;
           margin-bottom: 2rem;
@@ -283,7 +283,7 @@ const Welcome = () => {
         }
 
         .hero-description {
-          font-size: 2rem;
+          font-size: 1.7rem;
           color: #6b7280;
           margin-bottom: 1rem;
           font-weight: 500;

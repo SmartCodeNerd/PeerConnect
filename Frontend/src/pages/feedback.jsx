@@ -3,7 +3,8 @@
 import { Video, Star, Heart, Send, ArrowLeft } from "lucide-react"
 import { useState,useContext } from "react"
 import { useNavigate,useLocation } from "react-router-dom"
-import { AuthContext } from "../contexts/AuthContext"
+import { AuthContext } from "../contexts/AuthContext";
+import withAuth from "../utils/withAuth";
 
 const Feedback = () => {
   const [rating, setRating] = useState(0)
@@ -636,4 +637,4 @@ const Feedback = () => {
   )
 }
 
-export default Feedback
+export default withAuth(Feedback);

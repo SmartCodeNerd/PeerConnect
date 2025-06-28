@@ -312,7 +312,7 @@ const Welcome = () => {
           animation: gradientButton 3s ease infinite;
           color: white;
           text-decoration: none;
-          font-size: 1.25rem;
+          font-size: 1.2rem;
           font-weight: 600;
           padding: 2rem 2.5rem;
           border-radius: 50px;

@@ -1600,6 +1600,9 @@ export default function VideoMeetComponent() {
 
   const getPermissions = async () => {
     try {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Your browser does not support mediaDevices API");
+      } 
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true })
       window.localStream = stream
       if (localVideoRef.current) {
@@ -1659,31 +1662,39 @@ export default function VideoMeetComponent() {
 
       // Handle remote tracks - Fixed to prevent flickering
       connection.ontrack = (event) => {
-        const remoteStream = event.streams[0]
-        console.log("Received remote stream for", fromId, remoteStream)
+  const remoteStream = event.streams[0]
+  console.log("🎥 [gotMessageFromServer] ontrack fired for:", fromId, remoteStream)
 
-        // Use callback to prevent unnecessary re-renders
-        setVideos((prev) => {
-          const existingIndex = prev.findIndex((v) => v.socketId === fromId)
-          if (existingIndex !== -1) {
-            // Only update if stream is actually different
-            if (prev[existingIndex].stream !== remoteStream) {
-              const updated = [...prev]
-              updated[existingIndex] = { socketId: fromId, stream: remoteStream }
-              return updated
-            }
-            return prev
-          }
-          return [...prev, { socketId: fromId, stream: remoteStream }]
-        })
+  setVideos((prev) => {
+    const existing = prev.find((v) => v.socketId === fromId)
+    if (existing) {
+      if (existing.stream?.id === remoteStream.id) {
+        console.log("⚠️ [gotMessageFromServer] Stream unchanged for", fromId, "- skipping update")
+        return prev
       }
+
+      console.log("🔁 [gotMessageFromServer] Stream changed for", fromId, "- updating stream")
+      return prev.map((v) =>
+        v.socketId === fromId ? { ...v, stream: remoteStream } : v
+      )
+    }
+
+    console.log("➕ [gotMessageFromServer] Adding new stream for", fromId)
+    return [...prev, { socketId: fromId, stream: remoteStream }]
+  })
+}
+
 
       // Add local tracks to connection
       if (window.localStream) {
-        window.localStream.getTracks().forEach((track) => {
-          connection.addTrack(track, window.localStream)
-        })
-      }
+  window.localStream.getTracks().forEach((track) => {
+    const alreadySent = connection.getSenders().some((s) => s.track?.id === track.id)
+    if (!alreadySent) {
+      connection.addTrack(track, window.localStream)
+    }
+  })
+}
+
     }
 
     console.log("Signal received from", fromId, signal)
@@ -1711,90 +1722,100 @@ export default function VideoMeetComponent() {
   }
 
   const connectToSocketServer = () => {
-    socketRef.current = io(serverUrl)
+  socketRef.current = io(serverUrl)
 
-    socketRef.current.on("connect", () => {
-      console.log("Socket connected:", socketRef.current.id)
-      socketIdRef.current = socketRef.current.id
-      socketRef.current.emit("join-call", window.location.href)
-    })
+  socketRef.current.on("connect", () => {
+    console.log("Socket connected:", socketRef.current.id)
+    socketIdRef.current = socketRef.current.id
+    socketRef.current.emit("join-call", window.location.href)
+  })
 
-    socketRef.current.on("signal", gotMessageFromServer)
+  socketRef.current.on("signal", gotMessageFromServer)
 
-    socketRef.current.on("user-left", (id) => {
-      if (connections[id]) {
-        connections[id].close()
-        delete connections[id]
-      }
-      setVideos((prev) => prev.filter((v) => v.socketId !== id))
-    })
+  socketRef.current.on("user-left", (id) => {
+    if (connections[id]) {
+      connections[id].close()
+      delete connections[id]
+    }
+    setVideos((prev) => prev.filter((v) => v.socketId !== id))
+  })
 
-    socketRef.current.on("user-joined", ({ id, clients }) => {
-      ;(clients || []).forEach((socketListId) => {
-        if (socketListId === socketIdRef.current) return // Don't connect to self
-        if (connections[socketListId]) return
+  socketRef.current.on("user-joined", ({ id, clients }) => {
+    (clients || []).forEach((socketListId) => {
+      if (socketListId === socketIdRef.current || connections[socketListId]) return
 
-        const connection = new RTCPeerConnection(peerConfig)
-        connections[socketListId] = connection
+      const connection = new RTCPeerConnection(peerConfig)
+      connections[socketListId] = connection
 
-        // ICE candidate handling
-        connection.onicecandidate = (e) => {
-          if (e.candidate) {
-            socketRef.current.emit("signal", socketListId, JSON.stringify({ ice: e.candidate }))
-          }
-        }
-
-        // Handle remote tracks - Fixed to prevent flickering
-        connection.ontrack = (event) => {
-          const remoteStream = event.streams[0]
-          console.log("Received remote stream for", socketListId, remoteStream)
-
-          setVideos((prev) => {
-            const existingIndex = prev.findIndex((v) => v.socketId === socketListId)
-            if (existingIndex !== -1) {
-              if (prev[existingIndex].stream !== remoteStream) {
-                const updated = [...prev]
-                updated[existingIndex] = { socketId: socketListId, stream: remoteStream }
-                return updated
-              }
-              return prev
-            }
-            return [...prev, { socketId: socketListId, stream: remoteStream }]
-          })
-        }
-
-        // Add local tracks to connection
-        if (window.localStream) {
-          window.localStream.getTracks().forEach((track) => {
-            connection.addTrack(track, window.localStream)
-          })
-        }
-
-        console.log("Added local tracks to connection", socketListId, window.localStream.getTracks())
-
-        // Replay any buffered signals
-        if (signalBuffer[socketListId]) {
-          signalBuffer[socketListId].forEach((signal) => {
-            gotMessageFromServer(socketListId, JSON.stringify(signal))
-          })
-          delete signalBuffer[socketListId]
-        }
-      })
-
-      // If this is the local user, create offers to all others
-      if (id === socketIdRef.current) {
-        for (const id2 in connections) {
-          if (id2 === socketIdRef.current) continue
-          console.log("Creating offer/answer for", id2)
-          connections[id2].createOffer().then((description) => {
-            connections[id2].setLocalDescription(description).then(() => {
-              socketRef.current.emit("signal", id2, JSON.stringify({ sdp: description }))
-            })
-          })
+      // Handle ICE candidates
+      connection.onicecandidate = (e) => {
+        if (e.candidate) {
+          socketRef.current.emit("signal", socketListId, JSON.stringify({ ice: e.candidate }))
         }
       }
+
+      // Handle incoming remote stream
+      connection.ontrack = (event) => {
+  const remoteStream = event.streams[0]
+  console.log("🎥 [user-joined] ontrack fired for:", socketListId, remoteStream)
+
+  setVideos((prev) => {
+    const existing = prev.find((v) => v.socketId === socketListId)
+    if (existing) {
+      if (existing.stream?.id === remoteStream.id) {
+        console.log("⚠️ [user-joined] Stream unchanged for", socketListId, "- skipping update")
+        return prev
+      }
+
+      console.log("🔁 [user-joined] Stream changed for", socketListId, "- updating stream")
+      return prev.map((v) =>
+        v.socketId === socketListId ? { ...v, stream: remoteStream } : v
+      )
+    }
+
+    console.log("➕ [user-joined] Adding new stream for", socketListId)
+    return [...prev, { socketId: socketListId, stream: remoteStream }]
+  })
+}
+
+
+      // Add local tracks to connection
+      if (window.localStream) {
+  window.localStream.getTracks().forEach((track) => {
+    const alreadySent = connection.getSenders().some((s) => s.track?.id === track.id)
+    if (!alreadySent) {
+      connection.addTrack(track, window.localStream)
+    }
+  })
+}
+
+
+      console.log("Added local tracks to connection", socketListId, window.localStream.getTracks())
+
+      // Replay any buffered signals
+      if (signalBuffer[socketListId]) {
+        signalBuffer[socketListId].forEach((signal) => {
+          gotMessageFromServer(socketListId, JSON.stringify(signal))
+        })
+        delete signalBuffer[socketListId]
+      }
     })
-  }
+
+    // Only the joining peer initiates offers
+    if (id === socketIdRef.current) {
+      for (const id2 in connections) {
+        if (id2 === socketIdRef.current) continue
+        console.log("Creating offer/answer for", id2)
+        connections[id2].createOffer().then((description) => {
+          connections[id2].setLocalDescription(description).then(() => {
+            socketRef.current.emit("signal", id2, JSON.stringify({ sdp: description }))
+          })
+        })
+      }
+    }
+  })
+}
+
 
   const getMedia = async () => {
     setAskForUsername(false)
@@ -1918,32 +1939,34 @@ export default function VideoMeetComponent() {
 
   // Optimized VideoPlayer component to prevent flickering and fix scaling
   const VideoPlayer = ({ stream, socketId }) => {
-    const ref = useRef()
+  const ref = useRef()
 
-    useEffect(() => {
-      if (ref.current && stream) {
-        // Only set srcObject if it's different to prevent flickering
-        if (ref.current.srcObject !== stream) {
-          ref.current.srcObject = stream
-        }
-      }
-    }, [stream])
-
-    return (
-      <video
-        ref={ref}
-        autoPlay
-        playsInline
-        muted={false}
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover", // Fixed scaling issue
-          background: "#202124",
-        }}
-      />
-    )
+  useEffect(() => {
+  if (ref.current && stream && ref.current.srcObject?.id !== stream.id) {
+    console.log(`[VideoPlayer] Updating stream for ${socketId}`)
+    ref.current.srcObject = stream
+  } else {
+    console.log(`[VideoPlayer] Skipping update for ${socketId}, stream.id unchanged`)
   }
+}, [stream, socketId])
+
+
+  return (
+    <video
+      ref={ref}
+      autoPlay
+      playsInline
+      muted={socketId === socketIdRef.current} // Always mute remote video in local view (or conditionally if needed)
+      style={{
+        width: "100%",
+        height: "100%",
+        objectFit: "cover",
+        backgroundColor: "#000",
+      }}
+    />
+  )
+}
+
 
   const toggleVideo = () => {
     setVideo((prev) => {
@@ -2820,6 +2843,7 @@ export default function VideoMeetComponent() {
             </div>
 
             {/* Remote Videos */}
+            {console.log("🎞 Rendering video tiles:", videos.map(v => v.socketId))}
             {videos.map(({ socketId, stream }) => (
               <div className="meet-participant-tile" key={socketId}>
                 <VideoPlayer stream={stream} socketId={socketId} />

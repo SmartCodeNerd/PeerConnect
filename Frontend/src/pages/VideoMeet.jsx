@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState,useContext } from "react"
 import io from "socket.io-client"
 import {
   Video,
@@ -18,7 +18,9 @@ import {
   PhoneOff,
 } from "lucide-react"
 import { useNavigate,useLocation } from "react-router-dom"
-import withAuth from "../utils/withAuth"
+import withAuth from "../utils/withAuth";
+import { AuthContext } from "../contexts/AuthContext"
+
 const serverUrl = "http://localhost:3000"
 
 const connections = {}
@@ -34,6 +36,8 @@ function VideoMeetComponent() {
   const localVideoRef = useRef()
   const location = useLocation();
   const {meetCode} = location.state || {};
+  const {addToUserHistory} = useContext(AuthContext);
+
 
   const [username, setUsername] = useState("")
   const [askForUsername, setAskForUsername] = useState(true)
@@ -280,7 +284,8 @@ function VideoMeetComponent() {
 
   const getMedia = async () => {
     setAskForUsername(false)
-    await getUserMedia()
+    await getUserMedia();
+    await addToUserHistory(meetCode);
     connectToSocketServer()
   }
 

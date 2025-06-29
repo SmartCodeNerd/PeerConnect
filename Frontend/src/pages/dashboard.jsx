@@ -4,7 +4,7 @@ import { Video, Users, History, LogOut, Copy, Plus, Play, Calendar, Star, Heart,
 import { useState,useContext } from "react"
 import { useNavigate} from "react-router-dom";
 import withAuth from '../utils/withAuth';
-
+import { AuthContext } from "../contexts/AuthContext";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -12,11 +12,11 @@ const Dashboard = () => {
   const [showDropdown, setShowDropdown] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [createdCode, setCreatedCode] = useState("")
+  const {addToUserHistory} = useContext(AuthContext);
   
 
   const handleJoinVideoCall = async () => {
     if (meetingCode.trim()) {
-      // await addToUserHistory(meetingCode);
       console.log("handleJoinVideoCall",meetingCode);
       navigate(`/${meetingCode}`, {
         state:{
@@ -53,7 +53,7 @@ const Dashboard = () => {
 
   const handleStartInstantMeeting = async () => {
     const meetCode = generateRandomCode();
-    console.log("handleJoinVideoCall",meetCode);
+    //console.log("handleJoinVideoCall",meetCode);
     navigate(`/${meetCode}`,{
         state:{
           meetCode:meetCode,

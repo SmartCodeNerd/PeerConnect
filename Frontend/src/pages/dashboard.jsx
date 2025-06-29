@@ -1,10 +1,11 @@
 "use client"
 
 import { Video, Users, History, LogOut, Copy, Plus, Play, Calendar, Star, Heart, Settings } from "lucide-react"
-import { useState,useContext } from "react"
-import { useNavigate,useLocation} from "react-router-dom";
+import { useState, useContext } from "react"
+import { useNavigate, useLocation } from "react-router-dom";
 import withAuth from '../utils/withAuth';
 import { AuthContext } from "../contexts/AuthContext";
+import Swal from 'sweetalert2'
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -12,21 +13,19 @@ const Dashboard = () => {
   const [showDropdown, setShowDropdown] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [createdCode, setCreatedCode] = useState("")
-  const {handleLogout} = useContext(AuthContext);
+  const { handleLogout } = useContext(AuthContext);
   const location = useLocation();
-  const {username} = location.state || {};
+  const { username } = location.state || {};
 
   const handleJoinVideoCall = async () => {
     if (meetingCode.trim()) {
-      console.log("handleJoinVideoCall",meetingCode);
       navigate(`/${meetingCode}`, {
-        state:{
-          meetCode:meetingCode,
+        state: {
+          meetCode: meetingCode,
         }
-      }
-      )
+      });
+    }
   }
-}
 
   const generateRandomCode = () => {
     const getRandomLetters = (length) => {
@@ -54,30 +53,75 @@ const Dashboard = () => {
 
   const handleStartInstantMeeting = async () => {
     const meetCode = generateRandomCode();
-    //console.log("handleJoinVideoCall",meetCode);
-    navigate(`/${meetCode}`,{
-        state:{
-          meetCode:meetCode,
-        }
-    }
-  )
+    navigate(`/${meetCode}`, {
+      state: {
+        meetCode: meetCode,
+      }
+    });
   }
 
   const handleCopy = () => {
     navigator.clipboard.writeText(createdCode)
-  }
-
-  const handleLogoutItem = () => {
-    localStorage.removeItem("token")
-    navigate("/");
+    Swal.fire({
+      icon: 'success',
+      title: 'Code Copied!',
+      text: 'Meeting code has been copied to clipboard.',
+      background: 'rgba(255, 255, 255, 0.95)',
+      color: '#374151',
+      confirmButtonColor: '#ff6b35',
+      confirmButtonText: 'OK',
+      backdrop: 'rgba(255, 107, 53, 0.2)',
+      customClass: {
+        popup: 'auth-sweetalert',
+        title: 'auth-sweetalert-title',
+        content: 'auth-sweetalert-content',
+        confirmButton: 'auth-sweetalert-button'
+      }
+    });
   }
 
   const handleLogoutFunc = async () => {
-    console.log("I am great");
-    const token = localStorage.getItem("token");
-    console.log(username,token);
-    const res = await handleLogout(username,token);
-    console.log("Result for logout",res);
+    try {
+      const token = localStorage.getItem("token");
+      await handleLogout(username, token);
+      Swal.fire({
+        icon: 'success',
+        title: 'Login Successful!',
+        text: 'Welcome back to Mulakaat!',
+        background: 'rgba(255, 255, 255, 0.95)',
+        color: '#374151',
+        confirmButtonColor: '#ff6b35',
+        confirmButtonText: 'Continue',
+        backdrop: 'rgba(255, 107, 53, 0.2)',
+        customClass: {
+          popup: 'auth-sweetalert',
+          title: 'auth-sweetalert-title',
+          content: 'auth-sweetalert-content',
+          confirmButton: 'auth-sweetalert-button'
+        }
+      }).then(() => {
+        localStorage.removeItem("token");
+        navigate("/");
+      });
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || "Logout failed. Please try again.";
+      Swal.fire({
+        icon: 'error',
+        title: 'Logout Failed',
+        text: errorMessage,
+        background: 'rgba(255, 255, 255, 0.95)',
+        color: '#374151',
+        confirmButtonColor: '#ff6b35',
+        confirmButtonText: 'Try Again',
+        backdrop: 'rgba(255, 107, 53, 0.2)',
+        customClass: {
+          popup: 'auth-sweetalert',
+          title: 'auth-sweetalert-title',
+          content: 'auth-sweetalert-content',
+          confirmButton: 'auth-sweetalert-button'
+        }
+      });
+    }
   }
 
   return (
@@ -96,7 +140,6 @@ const Dashboard = () => {
           overflow: hidden;
         }
 
-        /* Background decorative elements */
         .dashboard-container::before {
           content: "";
           position: absolute;
@@ -124,7 +167,6 @@ const Dashboard = () => {
           50% { transform: translateY(-20px) rotate(5deg); }
         }
 
-        /* Header */
         .header {
           border-bottom: 1px solid rgba(255, 107, 53, 0.2);
           background: rgba(255, 255, 255, 0.9);
@@ -229,7 +271,6 @@ const Dashboard = () => {
           height: 1.25rem;
         }
 
-        /* Main Content */
         .main-content {
           max-width: 1200px;
           margin: 0 auto;
@@ -309,7 +350,6 @@ const Dashboard = () => {
           margin-bottom: 2rem;
         }
 
-        /* Meeting Actions */
         .meeting-actions {
           display: flex;
           flex-direction: column;
@@ -356,7 +396,6 @@ const Dashboard = () => {
           height: 1.25rem;
         }
 
-        /* Dropdown */
         .dropdown {
           position: absolute;
           top: 100%;
@@ -394,7 +433,6 @@ const Dashboard = () => {
           border-bottom: 1px solid rgba(255, 107, 53, 0.1);
         }
 
-        /* Join Meeting */
         .join-meeting-section {
           display: flex;
           gap: 1rem;
@@ -441,7 +479,6 @@ const Dashboard = () => {
           transform: none;
         }
 
-        /* Right Panel */
         .right-panel {
           display: flex;
           align-items: center;
@@ -510,7 +547,6 @@ const Dashboard = () => {
           color: white;
         }
 
-        /* Modal */
         .modal-overlay {
           position: fixed;
           top: 0;
@@ -590,7 +626,36 @@ const Dashboard = () => {
           background: rgba(107, 114, 128, 0.2);
         }
 
-        /* Responsive Design */
+        .auth-sweetalert {
+          border-radius: 1rem !important;
+          border: 2px solid rgba(255, 107, 53, 0.2) !important;
+          box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4) !important;
+          font-family: 'Arial', sans-serif !important;
+        }
+
+        .auth-sweetalert-title {
+          font-size: 1.5rem !important;
+          font-weight: 700 !important;
+        }
+
+        .auth-sweetalert-content {
+          font-size: 1rem !important;
+          color: #6b7280 !important;
+        }
+
+        .auth-sweetalert-button {
+          background: linear-gradient(45deg, #ff6b35, #f7931e, #ffd23f) !important;
+          border-radius: 0.75rem !important;
+          font-weight: 600 !important;
+          padding: 0.75rem 1.5rem !important;
+          transition: all 0.3s ease !important;
+        }
+
+        .auth-sweetalert-button:hover {
+          transform: translateY(-2px) !important;
+          box-shadow: 0 8px 20px rgba(255, 107, 53, 0.6) !important;
+        }
+
         @media (max-width: 768px) {
           .header-container {
             flex-direction: column;
@@ -628,7 +693,6 @@ const Dashboard = () => {
       `}</style>
 
       <div className="dashboard-container">
-        {/* Header */}
         <header className="header">
           <div className="header-container">
             <div className="nav-brand">
@@ -657,10 +721,8 @@ const Dashboard = () => {
           </div>
         </header>
 
-        {/* Main Content */}
         <main className="main-content">
           <div className="dashboard-grid">
-            {/* Left Panel */}
             <div className="left-panel">
               <div className="welcome-section">
                 <div className="welcome-badge">
@@ -677,7 +739,6 @@ const Dashboard = () => {
               </div>
 
               <div className="meeting-actions">
-                {/* New Meeting */}
                 <div className="new-meeting-section">
                   <button className="new-meeting-btn" onClick={() => setShowDropdown(!showDropdown)}>
                     <Plus className="btn-icon" />
@@ -698,7 +759,6 @@ const Dashboard = () => {
                   )}
                 </div>
 
-                {/* Join Meeting */}
                 <div className="join-meeting-section">
                   <input
                     type="text"
@@ -714,7 +774,6 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Right Panel */}
             <div className="right-panel">
               <div className="demo-container">
                 <div className="demo-screen">
@@ -736,7 +795,6 @@ const Dashboard = () => {
           </div>
         </main>
 
-        {/* Modal */}
         {showModal && (
           <div className="modal-overlay" onClick={() => setShowModal(false)}>
             <div className="modal-content" onClick={(e) => e.stopPropagation()}>
@@ -755,6 +813,8 @@ const Dashboard = () => {
           </div>
         )}
       </div>
+
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     </>
   )
 }

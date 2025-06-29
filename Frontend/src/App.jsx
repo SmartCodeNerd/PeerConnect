@@ -7,6 +7,7 @@ import VideoMeetComponent from './pages/VideoMeet';
 import Dashboard from './pages/dashboard.jsx';
 import Feedback from './pages/feedback.jsx';
 import History from './pages/history.jsx';
+import About from './pages/about.jsx';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
             <Route path='/dashboard' element={<Dashboard/>} />
             <Route path='/afterCall' element={<Feedback/>} />
             <Route path='/history' element={<History/>} />
+            <Route path='/about' element={<About/>} />
           </Routes>
         </AuthProvider>
 

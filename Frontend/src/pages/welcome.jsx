@@ -1,59 +1,9 @@
-// import "../App.css";
-// import { Link, useNavigate } from "react-router-dom";
-// import React from "react";
-
-// const Welcome = () => {
-//   return (
-//     <div className="landingPageContainer"> 
-//       <nav>
-//                 <div className='navHeader'>
-//                     <h2>PeerConnect</h2>
-//                 </div>
-//                 <div className='navlist'>
-//                     <p onClick={() => {
-//                         router("/aljk23")
-//                     }}>Join as Guest</p>
-//                     <p onClick={() => {
-//                         router("/auth")
-
-//                     }}>Register</p>
-//                     <div onClick={() => {
-//                         router("/auth")
-
-//                     }} role='button'>
-//                         <p>Login</p>
-//                     </div>
-//                 </div>
-//             </nav>
-
-//             <div className="landingMainContainer">
-//               <div className="mobileText">
-//                 <h1><span style={{color:"#D97500"}}>Connect</span> With Your Loved Ones</h1>
-//                 <p>Cover a distance by PeerConnect</p>
-//                 <div role='button' className="getStartedButton">
-//                   <Link to={"/auth"}>Get Started</Link>
-//                 </div>
-//               </div>
-//               <div className="mobileImage">
-//                 <img src="/mobile.png" alt="landing" />
-//               </div>
-//             </div>
-//     </div>
-//   );
-// };
-
-// export default Welcome;
-//------------------------old code above
-
 "use client"
 
 import { Video, Users, Shield, Smartphone, ArrowRight, Star, Heart } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
 
 const Welcome = () => {
-  // const navigate = (path) => {
-  //   console.log(`Navigating to: ${path}`)
-  // }
 
   const navigate = useNavigate();
 
@@ -794,10 +744,20 @@ const Welcome = () => {
               <a href="#about" className="nav-link">
                 About
               </a>
-              <button className="nav-btn nav-btn-outline" onClick={() => navigate("/auth")}>
+              <button className="nav-btn nav-btn-outline" onClick={() => navigate("/about")}>
+                About Us
+              </button>
+              <button className="nav-btn nav-btn-outline" onClick={() => navigate("/auth",{
+                state:{
+                  bool:true
+                }})}>
                 Sign In
               </button>
-              <button className="nav-btn nav-btn-primary" onClick={() => navigate("/auth")}>
+              <button className="nav-btn nav-btn-primary" onClick={() => navigate("/auth",{
+                state:{
+                  bool:false
+                }
+              })}>
                 Register
               </button>
             </nav>
@@ -933,4 +893,4 @@ const Welcome = () => {
   )
 }
 
-export default Welcome
+export default Welcome;

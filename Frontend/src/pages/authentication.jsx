@@ -3,12 +3,12 @@
 import { Video, User, Lock, Mail, Eye, EyeOff, Star, Heart } from "lucide-react"
 import { useState,useContext } from "react"
 import { AuthContext } from "../contexts/AuthContext"
-import { useNavigate } from "react-router-dom";
+import { useNavigate,useLocation } from "react-router-dom";
 
 
 const Auth = () => {
   const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState(true)
+  
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
@@ -18,6 +18,9 @@ const Auth = () => {
   const [error, setError] = useState('');
   const [message,setMessage] = useState('');
   const [open,setOpen] = useState(false);
+  const location = useLocation();
+  const { bool } = location.state || {};
+  const [isLogin, setIsLogin] = useState(bool);
 
   const handleCloseSnackbar = () => {
     setOpen(false);

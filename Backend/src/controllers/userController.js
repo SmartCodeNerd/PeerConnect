@@ -36,19 +36,26 @@ const register = async (req,res) => {
 
 const login = async (req,res) => {
     const {username,password} = req.body;
+    console.log("In Login",req.body);
     if(!username || !password) 
         return res.status(httpStatus.BAD_REQUEST).json({message:"All Fields are required"});
     try {
-        const user = await User.findOne({username});
+        const user = await User.findOne({username:username});
         if(!user) {
             return res.status(httpStatus.NOT_FOUND).json({message:"User Not Found"});
         }
-        const isMatch = bcrypt.compare(password,user.password);
+        console.log("Hello");
+        console.log("user",user);
+        const isMatch = await bcrypt.compare(password,user.password);
         if(!isMatch) {
             return res.status(httpStatus.BAD_REQUEST).json({message:"Invalid Password"});
         }
+        console.log("isMatch",isMatch);
         let token = crypto.randomBytes(20).toString("hex");
+        if(!user.token)
         user.token = token;
+        else
+        return res.status(httpStatus.BAD_REQUEST).json({message:"Logout Not Done"});
         await  user.save();
         return res.status(httpStatus.OK).json({message:"User Logged in Successfully",token:token});
     } 
@@ -59,19 +66,23 @@ const login = async (req,res) => {
 
 const logout = async (req,res) => {
     const {username,token} = req.body;
-    const user = await User.findOne({username});
+    console.log("Logout");
+    console.log("Body",req.body);
+    let user = await User.findOne({username:username});
     if(!user) {
         return res.status(httpStatus.NOT_FOUND).json({message:"User Not Found"});
     }
+    console.log("Before Logout",user);
     const isMatch = (user.token === token);
+    console.log("isMatch",isMatch);
     if(!isMatch) {
         return res.status(httpStatus.BAD_REQUEST).json({message:"Invalid Token"});
     }
     await user.updateOne({ $unset: { token: 1 } });
-    console.log(user);
+    user = await User.findOne({username:username});
+    console.log("After Logout",user);
     return res.status(httpStatus.OK).json({message:"Logged out Successfully"});
 }
-
 
 const getHistory = async (req, res) => { 
     const { token } = req.query;

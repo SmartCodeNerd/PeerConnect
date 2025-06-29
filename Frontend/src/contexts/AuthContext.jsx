@@ -39,12 +39,30 @@ export const AuthProvider = ({ children }) => {
       if (request.status === httpStatus.OK) {
         localStorage.setItem('token', request.data.token);
         setUserData({ username }); // Store username in userData
-        router('/dashboard');
+        return true;
       }
     } catch (err) {
       throw err;
     }
   };
+
+  const handleLogout = async (username,token) => {
+    try {
+      console.log("Logout");
+      console.log(username,token);
+      let request = await client.post('/auth/logout', {
+        username,
+        token
+      });
+      if (request.status === httpStatus.OK) {
+        localStorage.removeItem('token');
+        router('/');
+        return true;
+      }
+    } catch (err) {
+      throw err;
+    }
+  }
 
   const getHistoryOfUser = async () => {
     try {
@@ -100,6 +118,7 @@ export const AuthProvider = ({ children }) => {
     getHistoryOfUser,
     handleRegister,
     handleLogin,
+    handleLogout,
     submitFeedback
   };
 

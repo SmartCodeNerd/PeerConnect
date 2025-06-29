@@ -1,14 +1,13 @@
 "use client"
 
 import { Video, User, Lock, Mail, Eye, EyeOff, Star, Heart } from "lucide-react"
-import { useState,useContext } from "react"
+import { useState, useContext } from "react"
 import { AuthContext } from "../contexts/AuthContext"
-import { useNavigate,useLocation } from "react-router-dom";
-
+import { useNavigate, useLocation } from "react-router-dom";
+import Swal from 'sweetalert2'
 
 const Auth = () => {
   const navigate = useNavigate();
-  
   const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
     name: "",
@@ -16,15 +15,9 @@ const Auth = () => {
     password: "",
   });
   const [error, setError] = useState('');
-  const [message,setMessage] = useState('');
-  const [open,setOpen] = useState(false);
   const location = useLocation();
   const { bool } = location.state || {};
   const [isLogin, setIsLogin] = useState(bool);
-
-  const handleCloseSnackbar = () => {
-    setOpen(false);
-  };
 
   const handleInputChange = (e) => {
     setFormData({
@@ -33,35 +26,85 @@ const Auth = () => {
     })
   }
 
-
   const toggleAuthMode = () => {
     setIsLogin(!isLogin);
     setFormData({ name: "", username: "", password: "" });
     setError("");
-    setOpen(false);
   };
 
   const { handleRegister, handleLogin } = useContext(AuthContext);
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError(""); // Clear previous errors
-  try {
-    if (isLogin) {
-      await handleLogin(formData.username, formData.password);
-      navigate("/dashboard");
-    } else {
-      const result = await handleRegister(formData.name, formData.username, formData.password);
-      setMessage(result);
-      setOpen(true);
-      setFormData({ name: "", username: "", password: "" });
-      setIsLogin(true);
+    e.preventDefault();
+    setError(""); // Clear previous errors
+    try {
+      if (isLogin) {
+        await handleLogin(formData.username, formData.password);
+        Swal.fire({
+          icon: 'success',
+          title: 'Login Successful!',
+          text: 'Welcome back to Mulakaat!',
+          background: 'rgba(255, 255, 255, 0.95)',
+          color: '#374151',
+          confirmButtonColor: '#ff6b35',
+          confirmButtonText: 'Continue',
+          backdrop: 'rgba(255, 107, 53, 0.2)',
+          customClass: {
+            popup: 'auth-sweetalert',
+            title: 'auth-sweetalert-title',
+            content: 'auth-sweetalert-content',
+            confirmButton: 'auth-sweetalert-button'
+          }
+        }).then(() => {
+          navigate("/dashboard", {
+            state: {
+              username: formData.username,
+            }
+          });
+        });
+      } else {
+        const result = await handleRegister(formData.name, formData.username, formData.password);
+        Swal.fire({
+          icon: 'success',
+          title: 'Registration Successful!',
+          text: result,
+          background: 'rgba(255, 255, 255, 0.95)',
+          color: '#374151',
+          confirmButtonColor: '#ff6b35',
+          confirmButtonText: 'Continue to Sign In',
+          backdrop: 'rgba(255, 107, 53, 0.2)',
+          customClass: {
+            popup: 'auth-sweetalert',
+            title: 'auth-sweetalert-title',
+            content: 'auth-sweetalert-content',
+            confirmButton: 'auth-sweetalert-button'
+          }
+        }).then(() => {
+          setFormData({ name: "", username: "", password: "" });
+          setIsLogin(true);
+        });
+      }
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || "An error occurred";
+      Swal.fire({
+        icon: 'error',
+        title: isLogin ? 'Login Failed' : 'Registration Failed',
+        text: errorMessage,
+        background: 'rgba(255, 255, 255, 0.95)',
+        color: '#374151',
+        confirmButtonColor: '#ff6b35',
+        confirmButtonText: 'Try Again',
+        backdrop: 'rgba(255, 107, 53, 0.2)',
+        customClass: {
+          popup: 'auth-sweetalert',
+          title: 'auth-sweetalert-title',
+          content: 'auth-sweetalert-content',
+          confirmButton: 'auth-sweetalert-button'
+        }
+      });
+      setError(errorMessage);
     }
-  } catch (err) {
-    const errorMessage = err.response?.data?.message || "An error occurred";
-    setError(errorMessage);
-  }
-};
+  };
 
   return (
     <>
@@ -83,7 +126,6 @@ const Auth = () => {
           padding: 2rem;
         }
 
-        /* Background decorative elements */
         .auth-container::before {
           content: "";
           position: absolute;
@@ -111,7 +153,6 @@ const Auth = () => {
           50% { transform: translateY(-20px) rotate(5deg); }
         }
 
-        /* Auth Card */
         .auth-card {
           background: rgba(255, 255, 255, 0.95);
           backdrop-filter: blur(20px);
@@ -125,7 +166,6 @@ const Auth = () => {
           z-index: 10;
         }
 
-        /* Header */
         .auth-header {
           text-align: center;
           margin-bottom: 2rem;
@@ -218,7 +258,6 @@ const Auth = () => {
           font-weight: 500;
         }
 
-        /* Toggle Buttons */
         .auth-toggle {
           display: flex;
           background: rgba(255, 107, 53, 0.1);
@@ -246,7 +285,6 @@ const Auth = () => {
           box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
         }
 
-        /* Form */
         .auth-form {
           display: flex;
           flex-direction: column;
@@ -320,7 +358,6 @@ const Auth = () => {
           height: 1.25rem;
         }
 
-        /* Submit Button */
         .submit-btn {
           background: linear-gradient(45deg, #ff6b35, #f7931e, #ffd23f, #e91e63);
           background-size: 300% 300%;
@@ -352,7 +389,6 @@ const Auth = () => {
           transform: translateY(0);
         }
 
-        /* Footer */
         .auth-footer {
           text-align: center;
           margin-top: 2rem;
@@ -377,7 +413,6 @@ const Auth = () => {
           color: #f7931e;
         }
 
-        /* Decorative elements */
         .auth-decoration {
           position: absolute;
           border-radius: 50%;
@@ -402,7 +437,37 @@ const Auth = () => {
           box-shadow: 0 4px 15px rgba(233, 30, 99, 0.4);
         }
 
-        /* Responsive Design */
+        /* SweetAlert Custom Styles */
+        .auth-sweetalert {
+          border-radius: 1rem !important;
+          border: 2px solid rgba(255, 107, 53, 0.2) !important;
+          box-shadow: 0 8px 25px rgba(255, 107, 53, 0.4) !important;
+          font-family: 'Arial', sans-serif !important;
+        }
+
+        .auth-sweetalert-title {
+          font-size: 1.5rem !important;
+          font-weight: 700 !important;
+        }
+
+        .auth-sweetalert-content {
+          font-size: 1rem !important;
+          color: #6b7280 !important;
+        }
+
+        .auth-sweetalert-button {
+          background: linear-gradient(45deg, #ff6b35, #f7931e, #ffd23f) !important;
+          border-radius: 0.75rem !important;
+          font-weight: 600 !important;
+          padding: 0.75rem 1.5rem !important;
+          transition: all 0.3s ease !important;
+        }
+
+        .auth-sweetalert-button:hover {
+          transform: translateY(-2px) !important;
+          box-shadow: 0 8px 20px rgba(255, 107, 53, 0.6) !important;
+        }
+
         @media (max-width: 768px) {
           .auth-container {
             padding: 1rem;
@@ -445,11 +510,9 @@ const Auth = () => {
 
       <div className="auth-container">
         <div className="auth-card">
-          {/* Decorative elements */}
           <div className="auth-decoration auth-decoration-1"></div>
           <div className="auth-decoration auth-decoration-2"></div>
 
-          {/* Header */}
           <div className="auth-header">
             <div className="brand-section">
               <div className="brand-logo">
@@ -473,7 +536,6 @@ const Auth = () => {
             </p>
           </div>
 
-          {/* Toggle Buttons */}
           <div className="auth-toggle">
             <button className={`toggle-btn ${isLogin ? "active" : ""}`} onClick={() => setIsLogin(true)}>
               Sign In
@@ -483,7 +545,6 @@ const Auth = () => {
             </button>
           </div>
 
-          {/* Form */}
           <form className="auth-form" onSubmit={handleSubmit}>
             {!isLogin && (
               <div className="form-group">
@@ -556,23 +617,18 @@ const Auth = () => {
             </button>
           </form>
 
-          {/* Footer */}
           <div className="auth-footer">
-          <p className="footer-text">
-            {isLogin ? "Don't have an account? " : "Already have an account? "}
-            <span className="footer-link" onClick={toggleAuthMode}>
-              {isLogin ? "Register here" : "Sign in here"}
-            </span>
-          </p>
-        </div>
-        </div>
-
-        {open && (
-          <div className="snackbar" onClick={handleCloseSnackbar}>
-            {message}
+            <p className="footer-text">
+              {isLogin ? "Don't have an account? " : "Already have an account? "}
+              <span className="footer-link" onClick={toggleAuthMode}>
+                {isLogin ? "Register here" : "Sign in here"}
+              </span>
+            </p>
           </div>
-        )}
+        </div>
       </div>
+
+      <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     </>
   )
 }

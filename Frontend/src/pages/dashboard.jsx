@@ -2,7 +2,7 @@
 
 import { Video, Users, History, LogOut, Copy, Plus, Play, Calendar, Star, Heart, Settings } from "lucide-react"
 import { useState,useContext } from "react"
-import { useNavigate} from "react-router-dom";
+import { useNavigate,useLocation} from "react-router-dom";
 import withAuth from '../utils/withAuth';
 import { AuthContext } from "../contexts/AuthContext";
 
@@ -12,8 +12,9 @@ const Dashboard = () => {
   const [showDropdown, setShowDropdown] = useState(false)
   const [showModal, setShowModal] = useState(false)
   const [createdCode, setCreatedCode] = useState("")
-  const {addToUserHistory} = useContext(AuthContext);
-  
+  const {handleLogout} = useContext(AuthContext);
+  const location = useLocation();
+  const {username} = location.state || {};
 
   const handleJoinVideoCall = async () => {
     if (meetingCode.trim()) {
@@ -66,9 +67,17 @@ const Dashboard = () => {
     navigator.clipboard.writeText(createdCode)
   }
 
-  const handleLogout = () => {
+  const handleLogoutItem = () => {
     localStorage.removeItem("token")
     navigate("/");
+  }
+
+  const handleLogoutFunc = async () => {
+    console.log("I am great");
+    const token = localStorage.getItem("token");
+    console.log(username,token);
+    const res = await handleLogout(username,token);
+    console.log("Result for logout",res);
   }
 
   return (
@@ -640,7 +649,7 @@ const Dashboard = () => {
                 <Settings className="nav-icon" />
                 Settings
               </button>
-              <button className="nav-btn nav-btn-logout" onClick={handleLogout}>
+              <button className="nav-btn nav-btn-logout" onClick={handleLogoutFunc}>
                 <LogOut className="nav-icon" />
                 Logout
               </button>

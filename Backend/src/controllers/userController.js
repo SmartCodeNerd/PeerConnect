@@ -129,7 +129,7 @@ const addFeedback = async (req, res) => {
     if (!user) {
         return res.status(httpStatus.UNAUTHORIZED).json({ message: "Invalid token" });
     }
-
+    console.log(user);
     const meeting = await Meeting.findOne({meetingCode:meetCode});
     if (!meeting) {
         return res.status(httpStatus.UNAUTHORIZED).json({ message: "Invalid Meeting Code" });

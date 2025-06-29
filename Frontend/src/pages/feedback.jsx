@@ -2,7 +2,7 @@
 
 import { Video, Star, Heart, Send, ArrowLeft } from "lucide-react"
 import { useState,useContext } from "react"
-import { useNavigate,useLocation } from "react-router-dom"
+import { useNavigate,useLocation} from "react-router-dom"
 import { AuthContext } from "../contexts/AuthContext";
 import withAuth from "../utils/withAuth";
 
@@ -22,6 +22,7 @@ const Feedback = () => {
   const handleSubmit = async (e) => {
   e.preventDefault();
   try {
+    //console.log(rating,message,meetCode);
     await submitFeedback(rating, message,meetCode);
     setSubmitted(true);
     setTimeout(() => navigate("/dashboard"), 1500);

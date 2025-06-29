@@ -17,7 +17,7 @@ import {
   X,
   PhoneOff,
 } from "lucide-react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate,useLocation } from "react-router-dom"
 import withAuth from "../utils/withAuth"
 const serverUrl = "http://localhost:3000"
 
@@ -32,6 +32,8 @@ function VideoMeetComponent() {
   const socketRef = useRef()
   const socketIdRef = useRef()
   const localVideoRef = useRef()
+  const location = useLocation();
+  const {meetCode} = location.state || {};
 
   const [username, setUsername] = useState("")
   const [askForUsername, setAskForUsername] = useState(true)
@@ -393,7 +395,11 @@ function VideoMeetComponent() {
       })
     }, 1000)
 
-    navigate("/afterCall")
+    navigate("/afterCall",{
+      state:{
+        meetCode:meetCode,
+      }
+    })
   }
 
   // Optimized VideoPlayer component to prevent flickering and fix scaling

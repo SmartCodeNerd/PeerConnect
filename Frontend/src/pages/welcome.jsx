@@ -4,7 +4,6 @@ import { Video, Users, Shield, Smartphone, ArrowRight, Star, Heart } from "lucid
 import { Link, useNavigate } from "react-router-dom";
 
 const Welcome = () => {
-
   const navigate = useNavigate();
 
   return (
@@ -659,6 +658,11 @@ const Welcome = () => {
           color: #ffd23f;
         }
 
+        /* Smooth Scroll */
+        html {
+          scroll-behavior: smooth;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
           .header-container {
@@ -738,26 +742,19 @@ const Welcome = () => {
               </div>
             </div>
             <nav className="nav-menu">
-              <a href="#features" className="nav-link">
+              <a href="#features" className="nav-btn nav-btn-outline">
                 Features
-              </a>
-              <a href="#about" className="nav-link">
-                About
               </a>
               <button className="nav-btn nav-btn-outline" onClick={() => navigate("/about")}>
                 About Us
               </button>
-              <button className="nav-btn nav-btn-outline" onClick={() => navigate("/auth",{
-                state:{
-                  bool:true
-                }})}>
+              <button className="nav-btn nav-btn-outline" onClick={() => navigate("/auth", { state: { bool: true } })}>
                 Sign In
               </button>
-              <button className="nav-btn nav-btn-primary" onClick={() => navigate("/auth",{
-                state:{
-                  bool:false
-                }
-              })}>
+              <button
+                className="nav-btn nav-btn-primary"
+                onClick={() => navigate("/auth", { state: { bool: false } })}
+              >
                 Register
               </button>
             </nav>
@@ -882,7 +879,7 @@ const Welcome = () => {
             </div>
             <div className="footer-text">
               <p>
-                &copy; 2024 Mulakaat. Made with <span className="footer-heart">❤️</span> in{" "}
+                © 2024 Mulakaat. Made with <span className="footer-heart">❤️</span> in{" "}
                 <span className="footer-india">India</span>
               </p>
             </div>
@@ -890,7 +887,7 @@ const Welcome = () => {
         </footer>
       </div>
     </>
-  )
-}
+  );
+};
 
 export default Welcome;

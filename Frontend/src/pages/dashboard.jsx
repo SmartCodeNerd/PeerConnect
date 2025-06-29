@@ -2,7 +2,7 @@
 
 import { Video, Users, History, LogOut, Copy, Plus, Play, Calendar, Star, Heart, Settings } from "lucide-react"
 import { useState,useContext } from "react"
-import { useNavigate } from "react-router-dom";
+import { useNavigate} from "react-router-dom";
 import withAuth from '../utils/withAuth';
 
 

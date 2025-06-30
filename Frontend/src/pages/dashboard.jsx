@@ -22,6 +22,7 @@ const Dashboard = () => {
       navigate(`/${meetingCode}`, {
         state: {
           meetCode: meetingCode,
+          name:username,
         }
       });
     }
@@ -56,6 +57,7 @@ const Dashboard = () => {
     navigate(`/${meetCode}`, {
       state: {
         meetCode: meetCode,
+        name:username,
       }
     });
   }
@@ -82,12 +84,14 @@ const Dashboard = () => {
 
   const handleLogoutFunc = async () => {
     try {
+      console.log("FUn");
       const token = localStorage.getItem("token");
+      console.log(username,token);
       await handleLogout(username, token);
       Swal.fire({
         icon: 'success',
-        title: 'Login Successful!',
-        text: 'Welcome back to Mulakaat!',
+        title: 'Logout Successful!',
+        text: 'Hope our Mulakaat happens soon!',
         background: 'rgba(255, 255, 255, 0.95)',
         color: '#374151',
         confirmButtonColor: '#ff6b35',
@@ -100,7 +104,6 @@ const Dashboard = () => {
           confirmButton: 'auth-sweetalert-button'
         }
       }).then(() => {
-        localStorage.removeItem("token");
         navigate("/");
       });
     } catch (err) {

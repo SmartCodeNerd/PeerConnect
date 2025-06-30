@@ -12,7 +12,7 @@ const Feedback = () => {
   const [submitted, setSubmitted] = useState(false)
   const navigate = useNavigate()
   const location = useLocation();
-  const { meetCode } = location.state || {};
+  const { meetCode,username } = location.state || {};
   const { submitFeedback } = useContext(AuthContext);
 
   const handleStarClick = (star) => {
@@ -25,7 +25,11 @@ const Feedback = () => {
     //console.log(rating,message,meetCode);
     await submitFeedback(rating, message,meetCode);
     setSubmitted(true);
-    setTimeout(() => navigate("/dashboard"), 1500);
+    setTimeout(() => navigate("/dashboard",{
+      state:{
+        username:username,
+      }
+    }), 1500);
   } catch (err) {
     console.error("Feedback error:", err);
     alert("Failed to submit feedback.");

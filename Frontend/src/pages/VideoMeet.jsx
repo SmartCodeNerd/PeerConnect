@@ -35,7 +35,7 @@ function VideoMeetComponent() {
   const socketIdRef = useRef()
   const localVideoRef = useRef()
   const location = useLocation();
-  const {meetCode} = location.state || {};
+  const {meetCode,name} = location.state || {};
   const {addToUserHistory} = useContext(AuthContext);
 
 
@@ -403,6 +403,7 @@ function VideoMeetComponent() {
     navigate("/afterCall",{
       state:{
         meetCode:meetCode,
+        username:name,
       }
     })
   }
@@ -523,16 +524,6 @@ function VideoMeetComponent() {
           overflow: hidden; /* Prevent scrolling */
         }
 
-        .dashboard-container::after {
-          content: "";
-          position: absolute;
-          bottom: -30%;
-          left: -30%;
-          width: 60%;
-          height: 60%;
-          background: radial-gradient(circle, rgba(255, 107, 53, 0.2) 0%, transparent 70%);
-          animation: float 8s ease-in-out infinite reverse;
-        }
 
         @keyframes float {
           0%, 100% { transform: translateY(0px) rotate(0deg); }

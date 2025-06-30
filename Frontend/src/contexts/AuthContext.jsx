@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }) => {
 
   const handleLogout = async (username,token) => {
     try {
-      console.log("Logout");
+      console.log("Logout in Conetxt");
       console.log(username,token);
       let request = await client.post('/auth/logout', {
         username,
